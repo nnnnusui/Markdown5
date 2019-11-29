@@ -1,4 +1,4 @@
-package com.github.nnnnusui.md5
+package com.github.nnnnusui.markdown5
 
 object Sample {
   val text: String =

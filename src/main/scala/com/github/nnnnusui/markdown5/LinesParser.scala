@@ -1,4 +1,4 @@
-package com.github.nnnnusui.md5
+package com.github.nnnnusui.markdown5
 
 import scala.util.matching.Regex
 import scala.util.parsing.combinator.{Parsers, RegexParsers}
