@@ -1,7 +1,7 @@
 package com.github.nnnnusui.markdown5
 
 import com.github.nnnnusui.markdown5.CompilationError.Markdown5LexerError
-import com.github.nnnnusui.markdown5.Token.{CodeBlockEnclosure, Dedent, Indent, Indentation, Text}
+import com.github.nnnnusui.markdown5.Token.{CodeBlockEnclosure, Dedent, Indent, Indentation, Text, Title}
 
 import scala.util.matching.Regex
 import scala.util.parsing.combinator.RegexParsers
@@ -29,7 +29,10 @@ object Lexer extends RegexParsers{
 
   def indent: Parser[Indentation] = lineBreak ~> rep(spaces) ^^ (it=> Indentation(it.length))
   def text: Parser[Text] = stringLine ^^ (it=> Text(it))
-  def lines: Parser[List[Token]] = rep(codeBlockEnclosure | indent | text) ^^ (it=> indentProcess(it))
+  def title: Parser[Token] = "# " ~> stringLine  ^^ (it=> Title(it))
+
+  def line: Parser[Token] = codeBlockEnclosure | indent | title | text
+  def lines: Parser[List[Token]] = rep1(line) ^^ (it=> indentProcess(it))
 
   def indentProcess(tokens: List[Token], indents: List[Int] = List(0)): List[Token] ={
     tokens.headOption match {
