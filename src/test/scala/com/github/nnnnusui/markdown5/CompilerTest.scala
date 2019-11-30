@@ -5,8 +5,10 @@ import org.scalatest.FunSuite
 class CompilerTest extends FunSuite {
 
   test("testApply") {
-    val md5 = Compiler(Sample.text)
-    println(md5.right.get.value.mkString("\n"))
+    Compiler(Sample.text) match {
+      case Right(md5) => println(md5.value.mkString("\n"))
+      case Left(msg) => println(s"ERROR: $msg")
+    }
   }
 
 }
