@@ -1,7 +1,7 @@
 package com.github.nnnnusui.markdown5
 
 import com.github.nnnnusui.markdown5.CompilationError.Markdown5LexerError
-import com.github.nnnnusui.markdown5.Token.{CodeBlockEnclosure, Indentation, Text}
+import com.github.nnnnusui.markdown5.Token.{CodeBlockEnclosure, Dedent, Indent, Indentation, Text}
 
 import scala.util.matching.Regex
 import scala.util.parsing.combinator.RegexParsers
@@ -29,5 +29,24 @@ object Lexer extends RegexParsers{
 
   def indent: Parser[Indentation] = lineBreak ~> rep(spaces) ^^ (it=> Indentation(it.length))
   def text: Parser[Text] = stringLine ^^ (it=> Text(it))
-  def lines: Parser[List[Token]] = rep(codeBlockEnclosure | indent | text)
+  def lines: Parser[List[Token]] = rep(codeBlockEnclosure | indent | text) ^^ (it=> indentProcess(it))
+
+  def indentProcess(tokens: List[Token], indents: List[Int] = List(0)): List[Token] ={
+    tokens.headOption match {
+      case Some(Indentation(size)) if size > indents.head =>
+        val indentTokens = List.fill(size - indents.head){ Indent }
+        indentTokens ::: indentProcess(tokens.tail, size :: indents)
+      case Some(Indentation(size)) if size < indents.head =>
+        val kept = indents.filterNot(_ > size)
+        val dedentTokens = List.fill(indents.head - size){ Dedent }
+        dedentTokens ::: indentProcess(tokens.tail, kept)
+      case Some(Indentation(size)) if size == indents.head =>
+        indentProcess(tokens.tail, indents)
+      case Some(token) =>
+        token :: indentProcess(tokens.tail, indents)
+      case None =>
+        val dedentTokens = List.fill(indents.head){ Dedent }
+        dedentTokens
+    }
+  }
 }
