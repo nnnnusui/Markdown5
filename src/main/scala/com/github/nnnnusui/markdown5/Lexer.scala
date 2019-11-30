@@ -22,7 +22,7 @@ object Lexer extends RegexParsers{
   def char: Parser[String] = ".".r - lineBreak
   def stringLine: Lexer.Parser[String] = rep1(char) ^^ (_.mkString)
 
-  def indent: Parser[Indent] = lineBreak ~> rep(spaces) ^^ (it=> Indent(it.length))
+  def indent: Parser[Indentation] = lineBreak ~> rep(spaces) ^^ (it=> Indentation(it.length))
   def text: Parser[Text] = stringLine ^^ (it=> Text(it))
   def lines: Parser[List[Token]] = rep(indent | text)
 }

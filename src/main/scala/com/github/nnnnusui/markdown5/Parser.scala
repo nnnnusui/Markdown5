@@ -2,7 +2,7 @@ package com.github.nnnnusui.markdown5
 
 import com.github.nnnnusui.markdown5.CompilationError.Markdown5ParserError
 import com.github.nnnnusui.markdown5.Element.Line
-import com.github.nnnnusui.markdown5.Token.{Indent, Text}
+import com.github.nnnnusui.markdown5.Token.{CodeBlockEnclosure, Indentation, Text}
 
 import scala.util.parsing.combinator.Parsers
 
@@ -20,8 +20,8 @@ object Parser extends Parsers {
   def line: Parser[Element] = opt(indent) ~ text ^^ { case indent ~ text => Line(text.value) }
   def blankLine: Parser[Element] = indent ^^ (_=> Line(""))
 
-  private def indent: Parser[Indent]
-    = accept("indent", { case indent @ Indent(depth) => indent })
+  private def indent: Parser[Indentation]
+    = accept("indent", { case indent @ Indentation(depth) => indent })
   private def text: Parser[Text]
     = accept("text", { case text @ Text(value) => text })
 }
