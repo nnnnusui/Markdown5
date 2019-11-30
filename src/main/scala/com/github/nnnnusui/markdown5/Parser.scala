@@ -1,8 +1,8 @@
 package com.github.nnnnusui.markdown5
 
 import com.github.nnnnusui.markdown5.CompilationError.Markdown5ParserError
-import com.github.nnnnusui.markdown5.Element.Line
-import com.github.nnnnusui.markdown5.Token.{CodeBlockEnclosure, Indentation, Text}
+import com.github.nnnnusui.markdown5.Element.{Block, Line, Paragraph}
+import com.github.nnnnusui.markdown5.Token.{Dedent, Indent, Text}
 
 import scala.util.parsing.combinator.Parsers
 
@@ -15,13 +15,14 @@ object Parser extends Parsers {
     }
   }
   override type Elem = Token
-  def markdown5: Parser[Markdown5] = rep1(line | blankLine) ^^ (it=> Markdown5(it))
+  def markdown5: Parser[Markdown5] = rep1(block | line) ^^ (it=> Markdown5(it))
 
-  def line: Parser[Element] = opt(indent) ~ text ^^ { case indent ~ text => Line(text.value) }
-  def blankLine: Parser[Element] = indent ^^ (_=> Line(""))
+  def block: Parser[Block] = Indent ~> (block | paragraph) <~ Dedent ^^ (it=> Block(it))
 
-  private def indent: Parser[Indentation]
-    = accept("indent", { case indent @ Indentation(depth) => indent })
+  def paragraph: Parser[Paragraph] = rep(line) ^^ (it=> Paragraph(it))
+  def line: Parser[Line] = opt(Indent) ~ text ^^ { case _ ~ text => Line(text.value) }
+//  def blankLine: Parser[Element] = Indent ^^ (_=> Line(""))
+
   private def text: Parser[Text]
     = accept("text", { case text @ Text(value) => text })
 }
