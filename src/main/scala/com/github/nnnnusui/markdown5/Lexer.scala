@@ -1,7 +1,7 @@
 package com.github.nnnnusui.markdown5
 
 import com.github.nnnnusui.markdown5.CompilationError.Markdown5LexerError
-import com.github.nnnnusui.markdown5.Token.{CodeBlockEnclosure, Dedent, Indent, Indentation, Text, Title}
+import com.github.nnnnusui.markdown5.Token._
 
 import scala.util.matching.Regex
 import scala.util.parsing.combinator.RegexParsers
@@ -13,23 +13,39 @@ object Lexer extends RegexParsers{
       case Success(result, _) => Right(result)
     }
   }
-
   override def skipWhitespace = true
   override val whiteSpace: Regex = "[\t\r\f]+".r
 
-  def spaces: Parser[String] = " " | "\t"
   def lineBreak = "\n"
   def char: Parser[String] = ".".r - lineBreak
+  def toEndOfLine: Parser[String] = rep1(char) ^^ (_.mkString)
+  trait Line {
+    val prefix: String
+    def parser: Lexer.Parser[String] = prefix ~ ' ' ~> toEndOfLine
+  }
+  trait Span {
+    val prefix: String
+    val suffix: String
+  }
+  trait Block {
+    val prefix: Line
+    val suffix: Line
+  }
+  object Title extends Line{
+    override val prefix: String = "#"
+  }
+
+  def spaces: Parser[String] = " " | "\t"
   def stringLine: Lexer.Parser[String] = rep1(char) ^^ (_.mkString)
 
-  def codeBlockEnclosure: Parser[CodeBlockEnclosure] = {
+  def codeBlockEnclosure: Parser[Token.CodeBlockEnclosure] = {
     val attributes = stringLine
     "```" ~> opt(attributes)
   } ^^ (it=> CodeBlockEnclosure(it.getOrElse("")))
 
-  def indent: Parser[Indentation] = lineBreak ~> rep(spaces) ^^ (it=> Indentation(it.length))
-  def text: Parser[Text] = stringLine ^^ (it=> Text(it))
-  def title: Parser[Token] = "# " ~> stringLine  ^^ (it=> Title(it))
+  def indent: Parser[Token.Indentation] = lineBreak ~> rep(spaces) ^^ (it=> Token.Indentation(it.length))
+  def text: Parser[Token.Text] = stringLine ^^ (it=> Token.Text(it))
+  def title: Parser[Token.Title] = Title.parser  ^^ (it=> Token.Title(it))
 
   def line: Parser[Token] = codeBlockEnclosure | indent | title | text
   def lines: Parser[List[Token]] = rep1(line) ^^ (it=> indentProcess(it))
