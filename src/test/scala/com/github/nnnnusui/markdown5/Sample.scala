@@ -2,5 +2,5 @@ package com.github.nnnnusui.markdown5
 
 object Sample {
   val text: String =
-    """`a\\x\\`a`x`""".stripMargin
+    """*test*``**x`nest*emph*` *nest`code`*textdoshiyo""".stripMargin
 }

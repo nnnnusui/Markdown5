@@ -7,5 +7,6 @@ object Token {
     case object Empty extends Span
     case class Text(value: String) extends Span
     case class Code(value: String) extends Span
+    case class Emphasis(value: String) extends Span
   }
 }

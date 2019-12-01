@@ -18,14 +18,19 @@ object Lexer extends RegexParsers{
   def tokens: Parser[List[Token]] = rep1(token)
   def token: Parser[Token] = span
 
-  def span = code | text
-  def empty = "" ^^ (_=> Span.Empty)
-  def text = rep1(textChar) ^^ (it=> Span.Text(it.mkString))
-  def code: Parser[Span.Code] = '`' ~> rep1(textChar) <~ '`' ^^ (it=> Span.Code(it.mkString))
+  def span: Parser[Span] = emphasis | code | text
+  def text: Parser[Span.Text] = rep1(char - (emphasis | code)) ^^ (it=> Span.Text(it.mkString))
+  def code: Parser[Span.Code] = spanToken("`") ^^ (it=> Span.Code(it))
+  def emphasis: Parser[Span.Emphasis] = spanToken("*") ^^ (it=> Span.Emphasis(it))
 
-  def textChar = escapedEscapePrefix | escapedChar | (char - '`')
-  def escapedChar = escapePrefix ~> ("`")
-  def escapedEscapePrefix = escapePrefix.repeat(2)
+  def spanToken(enclosure: String): Parser[String] = spanToken(enclosure, enclosure)
+  def spanToken(prefix: String, suffix: String): Parser[String] ={
+    val escapedChar = escapePrefix ~> suffix
+    val textChar = escapedEscapePrefix | escapedChar | (char - suffix)
+    prefix ~> rep(textChar) <~ suffix ^^ (_.mkString)
+  }
+
+  def escapedEscapePrefix: String = escapePrefix.repeat(2)
   def escapePrefix = "\\"
 
   def toEndOfLine: Parser[String] = rep1(char - lineBreak) ^^ (_.mkString)
