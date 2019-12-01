@@ -16,13 +16,17 @@ object Lexer extends RegexParsers{
   override def skipWhitespace = true
   override val whiteSpace: Regex = "[\t\r\f]+".r
   def tokens: Parser[List[Token]] = rep1(token)
-  def token: Parser[Token] = code | text
+  def token: Parser[Token] = span
 
-  def text = rep1(textChar) ^^ (it=> Text(it.mkString))
-  def code = '`' ~> rep(textChar) <~ '`' ^^ (it=> Code(it.mkString))
+  def span = code | text
+  def empty = "" ^^ (_=> Span.Empty)
+  def text = rep1(textChar) ^^ (it=> Span.Text(it.mkString))
+  def code: Parser[Span.Code] = '`' ~> rep1(textChar) <~ '`' ^^ (it=> Span.Code(it.mkString))
 
-  def textChar = escapedChar | (char - '`')
-  def escapedChar = '\\' ~> "`"
+  def textChar = escapedEscapePrefix | escapedChar | (char - '`')
+  def escapedChar = escapePrefix ~> ("`")
+  def escapedEscapePrefix = escapePrefix.repeat(2)
+  def escapePrefix = "\\"
 
   def toEndOfLine: Parser[String] = rep1(char - lineBreak) ^^ (_.mkString)
   def spaces: Parser[String] = " " | "\t"
