@@ -18,10 +18,11 @@ object Lexer extends RegexParsers{
   def tokens: Parser[List[Token]] = rep1(token)
   def token: Parser[Token] = code | text
 
-  def text = rep1(escapedChar | char - '`') ^^ (it=> Text(it.mkString))
-  def code = '`' ~> rep(escapedChar | (char - '`')) <~ '`' ^^ (it=> Code(it.mkString))
+  def text = rep1(textChar) ^^ (it=> Text(it.mkString))
+  def code = '`' ~> rep(textChar) <~ '`' ^^ (it=> Code(it.mkString))
 
-  def escapedChar = '\\' ~> char
+  def textChar = escapedChar | (char - '`')
+  def escapedChar = '\\' ~> "`"
 
   def toEndOfLine: Parser[String] = rep1(char - lineBreak) ^^ (_.mkString)
   def spaces: Parser[String] = " " | "\t"
