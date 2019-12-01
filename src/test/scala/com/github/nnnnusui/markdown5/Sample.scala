@@ -6,9 +6,10 @@ object Sample {
       |ニセMarkdownって感じの書式です。
       |拡張子は ‘md5’ 。
       |
+      |
       |# 書式一覧
       |  # タイトル
-      |  ``` title.md5
+      |  ```title.md5
       |  # h1 文書のタイトル
       |  # h2
       |    # h3
@@ -21,7 +22,7 @@ object Sample {
       |    - が、h1とh2のインデントは同じになる。
       |
       |  # リスト
-      |  ``` list.md5
+      |  ```list.md5
       |  - list1
       |    - list1-1
       |      - list1-1-1
@@ -32,8 +33,8 @@ object Sample {
       |
       |
       |  # コードブロック
-      |  ``` cordBlock.md5
-      |    ``` example.txt
+      |  ```cordBlock.md5
+      |    ```example.txt
       |    example content.
       |    ```
       |  ```""".stripMargin

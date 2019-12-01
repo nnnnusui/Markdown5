@@ -8,7 +8,7 @@ import scala.util.parsing.combinator.RegexParsers
 
 object Lexer extends RegexParsers{
   def apply(text: String): Either[Markdown5LexerError, List[Token]] = {
-    parse(lines, text) match {
+    parse(tokens, text) match {
       case NoSuccess(msg, _) => Left(Markdown5LexerError(msg))
       case Success(result, _) => Right(result)
     }
@@ -21,7 +21,7 @@ object Lexer extends RegexParsers{
   def toEndOfLine: Parser[String] = rep1(char) ^^ (_.mkString)
   trait Line {
     val prefix: String
-    def parser: Lexer.Parser[String] = prefix ~ ' ' ~> toEndOfLine
+    def parser: Lexer.Parser[String] = prefix ~> toEndOfLine
   }
   trait Span {
     val prefix: String
@@ -30,25 +30,35 @@ object Lexer extends RegexParsers{
   trait Block {
     val prefix: Line
     val suffix: Line
+    def parser: Lexer.Parser[String] = prefix.parser | suffix.parser
   }
   object Title extends Line{
-    override val prefix: String = "#"
+    override val prefix: String = "# "
+  }
+  object CodeBlock extends Block{
+    private val enclosure = new Line {
+      override val prefix: String = "```"
+      override def parser: Lexer.Parser[String] = prefix ~> opt(toEndOfLine) ^^ (_.getOrElse(""))
+    }
+    override val prefix: Line = enclosure
+    override val suffix: Line = enclosure
   }
 
   def spaces: Parser[String] = " " | "\t"
-  def stringLine: Lexer.Parser[String] = rep1(char) ^^ (_.mkString)
+  def stringLine: Parser[String] = rep1(char) ^^ (_.mkString)
 
-  def codeBlockEnclosure: Parser[Token.CodeBlockEnclosure] = {
-    val attributes = stringLine
-    "```" ~> opt(attributes)
-  } ^^ (it=> CodeBlockEnclosure(it.getOrElse("")))
+  def thematicBreak = "***" | "---"
+
+  def codeBlockEnclosure: Parser[Token.CodeBlockEnclosure]
+    = CodeBlock.parser ^^ (it=> CodeBlockEnclosure(it))
 
   def indent: Parser[Token.Indentation] = lineBreak ~> rep(spaces) ^^ (it=> Token.Indentation(it.length))
   def text: Parser[Token.Text] = stringLine ^^ (it=> Token.Text(it))
+//  def paragraph: Parser[Token.Paragraph] = rep1(text <~ lineBreak) ^^ (it=> Token.Paragraph(it))
   def title: Parser[Token.Title] = Title.parser  ^^ (it=> Token.Title(it))
 
-  def line: Parser[Token] = codeBlockEnclosure | indent | title | text
-  def lines: Parser[List[Token]] = rep1(line) ^^ (it=> indentProcess(it))
+  def token: Parser[Token] = codeBlockEnclosure | indent | title | text
+  def tokens: Parser[List[Token]] = rep1(token) ^^ (it=> indentProcess(it))
 
   def indentProcess(tokens: List[Token], indents: List[Int] = List(0)): List[Token] ={
     tokens.headOption match {
