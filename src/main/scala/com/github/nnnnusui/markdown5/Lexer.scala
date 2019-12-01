@@ -1,6 +1,7 @@
 package com.github.nnnnusui.markdown5
 
 import com.github.nnnnusui.markdown5.CompilationError.LexerError
+import com.github.nnnnusui.markdown5.Token.Code
 
 import scala.util.matching.Regex
 import scala.util.parsing.combinator.RegexParsers
@@ -15,9 +16,9 @@ object Lexer extends RegexParsers{
   override def skipWhitespace = true
   override val whiteSpace: Regex = "[\t\r\f]+".r
   def tokens: Parser[List[Token]] = rep1(token)
-  def token: Parser[Token] = ???
+  def token: Parser[Token] = code
 
-
+  def code = '`' ~> rep(char - '`') <~ '`' ^^ (it=> Code(it.mkString))
 
   def toEndOfLine: Parser[String] = rep1(char - lineBreak) ^^ (_.mkString)
   def spaces: Parser[String] = " " | "\t"
