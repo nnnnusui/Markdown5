@@ -1,7 +1,6 @@
 package com.github.nnnnusui.markdown5
 
 import com.github.nnnnusui.markdown5.CompilationError.LexerError
-import com.github.nnnnusui.markdown5.Token.Span.Escaped
 import com.github.nnnnusui.markdown5.Token._
 
 import scala.util.matching.Regex
@@ -17,16 +16,12 @@ object Lexer extends RegexParsers{
   override def skipWhitespace = true
   override val whiteSpace: Regex = "[\t\r\f]+".r
   def tokens: Parser[List[Token]] = rep1(token)
-  def token: Parser[Token] = span
+  def token: Parser[Token] = line | indent
 
-  def span: Parser[Span] = escaped | escape | strong | emphasis | code | text
-  def text: Parser[Span.Text] = rep1(char - ("\\" | "**" | "*" | "`")) ^^ (it=> Span.Text(it.mkString))
-  def code: Lexer.Parser[Span.Code.type] = "`" ^^ (_=> Span.Code)
-  def emphasis: Lexer.Parser[Span.Emphasis.type] = "*" ^^ (_=> Span.Emphasis)
-  def strong: Lexer.Parser[Span.Strong.type] = "**" ^^ (_=> Span.Strong)
-  def escape: Lexer.Parser[Span.Escape.type] = escapePrefix ^^ (_=> Span.Escape)
+  def line: Parser[Line] = rep1(char) ^^ (it=> Line(it.mkString))
 
-  def escaped = "\\" ~> ("\\" | "**" | "*" | "`") ^^ (it=> Escaped(it))
+  def indent = lineBreak ~> "" ^^ (_=> Indent)
+
   def escapedEscapePrefix: String = escapePrefix.repeat(2)
   def escapePrefix = "\\"
 
