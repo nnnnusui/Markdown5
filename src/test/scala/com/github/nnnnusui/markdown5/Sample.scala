@@ -5,8 +5,11 @@ object Sample {
     """*test\*``\**x`nest*emph*`** *nest`code`*textdoshiyo **stron*nestem*g**
       |line2
       |line3
-      |
-      |
+      |  indent
+      |dedent
+      |  in1
+      |    in2
+      | ded1
       |
       |""".stripMargin
 }
