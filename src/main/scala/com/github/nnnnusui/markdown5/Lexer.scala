@@ -20,12 +20,8 @@ object Lexer extends RegexParsers{
 
   def line: Parser[Line] = rep1(char) ^^ (it=> Line(it.mkString))
 
-  def indent = lineBreak ~> "" ^^ (_=> Indent)
+  def indent = lineBreak ~> rep(spaces) ^^ (it=> Indentation(it.size))
 
-  def escapedEscapePrefix: String = escapePrefix.repeat(2)
-  def escapePrefix = "\\"
-
-  def toEndOfLine: Parser[String] = rep1(char - lineBreak) ^^ (_.mkString)
   def spaces: Parser[String] = " " | "\t"
   def char: Parser[String] = ".".r
   def lineBreak = "\n"
