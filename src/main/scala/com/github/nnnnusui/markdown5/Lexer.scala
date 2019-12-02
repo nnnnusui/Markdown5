@@ -1,6 +1,7 @@
 package com.github.nnnnusui.markdown5
 
 import com.github.nnnnusui.markdown5.CompilationError.LexerError
+import com.github.nnnnusui.markdown5.Token.Span.Escaped
 import com.github.nnnnusui.markdown5.Token._
 
 import scala.util.matching.Regex
@@ -18,18 +19,14 @@ object Lexer extends RegexParsers{
   def tokens: Parser[List[Token]] = rep1(token)
   def token: Parser[Token] = span
 
-  def span: Parser[Span] = emphasis | code | text
-  def text: Parser[Span.Text] = rep1(char - (emphasis | code)) ^^ (it=> Span.Text(it.mkString))
-  def code: Parser[Span.Code] = spanToken("`") ^^ (it=> Span.Code(it))
-  def emphasis: Parser[Span.Emphasis] = spanToken("*") ^^ (it=> Span.Emphasis(it))
+  def span: Parser[Span] = escaped | escape | strong | emphasis | code | text
+  def text: Parser[Span.Text] = rep1(char - ("\\" | "**" | "*" | "`")) ^^ (it=> Span.Text(it.mkString))
+  def code: Lexer.Parser[Span.Code.type] = "`" ^^ (_=> Span.Code)
+  def emphasis: Lexer.Parser[Span.Emphasis.type] = "*" ^^ (_=> Span.Emphasis)
+  def strong: Lexer.Parser[Span.Strong.type] = "**" ^^ (_=> Span.Strong)
+  def escape: Lexer.Parser[Span.Escape.type] = escapePrefix ^^ (_=> Span.Escape)
 
-  def spanToken(enclosure: String): Parser[String] = spanToken(enclosure, enclosure)
-  def spanToken(prefix: String, suffix: String): Parser[String] ={
-    val escapedChar = escapePrefix ~> suffix
-    val textChar = escapedEscapePrefix | escapedChar | (char - suffix)
-    prefix ~> rep(textChar) <~ suffix ^^ (_.mkString)
-  }
-
+  def escaped = "\\" ~> ("\\" | "**" | "*" | "`") ^^ (it=> Escaped(it))
   def escapedEscapePrefix: String = escapePrefix.repeat(2)
   def escapePrefix = "\\"
 
