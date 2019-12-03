@@ -6,7 +6,7 @@ class CompilerTest extends FunSuite {
 
   test("testApply") {
     Compiler(Sample.text) match {
-      case Right(md5) => println(md5.value)
+      case Right(md5) => println(md5.toHtml)
       case Left(msg) => println(s"ERROR: $msg")
     }
   }
