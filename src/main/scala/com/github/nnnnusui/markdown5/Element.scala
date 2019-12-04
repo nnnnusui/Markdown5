@@ -8,7 +8,7 @@ object Element {
     override def toHtml: String = s"<h1>$values</h1>"
   }
   case class Paragraph(lines: List[String]) extends Element {
-    override def toHtml: String = s"<p>${lines.map(_.replace(" ", "&nbsp;")).mkString("<br>")}</p>"
+    override def toHtml: String = s"<p>${lines.map(_.replace(' ', '\u00A0')).mkString("<br>")}</p>"
     override def toString: String = lines.mkString("\n")
   }
   case class Block(title: Title, elements: List[Element]) extends Element {
