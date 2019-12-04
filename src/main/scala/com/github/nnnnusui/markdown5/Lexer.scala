@@ -16,13 +16,12 @@ object Lexer extends RegexParsers{
   override def skipWhitespace = true
   override val whiteSpace: Regex = "[\t\r\f]+".r
   def tokens: Parser[List[Token]] = rep1(token) ^^ (it=> indentProcess(it))
-  def token: Parser[Token] = indentAndTitle | indentAndLine
+  def token: Parser[Token] = indent ~ lineContent ^^ {case(indent ~ content)=> IndentAndToken(indent, content)}
+  def lineContent: Parser[Token] = title | line
 
   def indent: Parser[Indentation] = lineBreak ~> rep(spaces) ^^ (it=> Indentation(it.size))
   def title: Parser[Title] = "# " ~> rep1(char) ^^ (it=> Title(it.mkString))
-  def indentAndTitle: Parser[IndentAndTitle] = indent ~ title ^^ {case(indent ~ title)=> IndentAndTitle(indent, title)}
   def line: Parser[Line] = rep(char) ^^ (it=> Line(it.mkString))
-  def indentAndLine: Parser[IndentAndLine] = indent ~ line ^^ {case(indent ~ line)=> IndentAndLine(indent, line)}
 
   def spaces: Parser[String] = " " | "\t"
   def char: Parser[String] = ".".r
@@ -30,10 +29,10 @@ object Lexer extends RegexParsers{
 
   def indentProcess(tokens: List[Token], indent: Int = 0): List[Token] ={
     tokens.headOption match {
-      case Some(IndentAndTitle(Indentation(depth), title)) =>
+      case Some(IndentAndToken(Indentation(depth), title: Title)) =>
         val indentTokens = List.fill(depth - indent){ Indent }
         indentTokens ::: (title :: indentProcess(tokens.tail, depth))
-      case Some(IndentAndLine(Indentation(depth), line))=>
+      case Some(IndentAndToken(Indentation(depth), line: Line))=>
         depth match {
           case _ if depth < indent =>
             val dedentTokens = List.fill(indent - depth){ Dedent }

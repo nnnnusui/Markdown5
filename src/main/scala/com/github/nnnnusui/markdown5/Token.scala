@@ -12,4 +12,5 @@ object Token {
 
   case class IndentAndTitle(indent: Indentation, title: Title) extends Token
   case class IndentAndLine(indent: Indentation, line: Line) extends Token
+  case class IndentAndToken(indent: Indentation, token: Token) extends Token
 }
