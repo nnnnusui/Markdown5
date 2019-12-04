@@ -15,6 +15,6 @@ object Sample {
       |  的な。
       |# H2
       |ででんと
-      |　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　空白テスト
+      |                                                                          空白テスト
       |""".stripMargin
 }
