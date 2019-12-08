@@ -17,30 +17,33 @@ object Lexer extends RegexParsers{
   override val whiteSpace: Regex = "[\t\r\f]+".r
   def tokens: Parser[List[Token]] = rep1(token) ^^ (it=> indentProcess(it))
   def token: Parser[Token] = indent ~ lineContent ^^ {case indent ~ content => IndentAndToken(indent, content)}
-  def lineContent: Parser[Token] = blockquote | title | line
+  def lineContent: Parser[Token] = blockquote | codeBlock | title | line
 
-  def indent: Parser[Indentation] = lineBreak ~> rep(spaces) ^^ (it=> Indentation(it.size))
+  def indent: Parser[Indentation] = lineBreak ~> rep(space) ^^ (it=> Indentation(it.size))
   def title: Parser[Title] = "# " ~> rep1(char) ^^ (it=> Title(it.mkString))
   def line: Parser[Line] = rep(char) ^^ (it=> Line(it.mkString))
-  def blockquote: Lexer.Parser[Token.BlockQuote.type] = ">>>" ^^ (it=> BlockQuote)
+  def blockquote: Parser[Token.BlockQuote.type] = blockPrefix("'") ^^ (it=> BlockQuote)
+  def codeBlock: Parser[Token.CodeBlock.type] = blockPrefix("`") ^^ (it=> CodeBlock)
+  def blockPrefix(prefix: String): Parser[String] = prefix <~ ">"
 
-  def spaces: Parser[String] = " " | "\t"
+  def space: Parser[String] = " " | "\t"
   def char: Parser[String] = ".".r
   def lineBreak = "\n"
 
   def indentProcess(tokens: List[Token], indent: Int = 0, isBlockHead: Boolean = false): List[Token] ={
     tokens.headOption match {
       case Some(IndentAndToken(Indentation(depth), line: Line)) if indent < depth && !isBlockHead =>
-        val spaces = " ".repeat(depth - indent)
+        val spaces = "\u00A0".repeat(depth - indent)
         Line(s"$spaces${line.value}") :: indentProcess(tokens.tail, indent)
       case Some(IndentAndToken(Indentation(depth), token))=>
-        val indentationTokens = depth match {
+        (depth match {
           case _ if indent < depth => List.fill(depth - indent){ Indent }
           case _ if indent > depth => List.fill(indent - depth){ Dedent }
           case _                   => List.empty
-        }
-        val nextIsBlockHead = token == BlockQuote
-        indentationTokens ::: token :: indentProcess(tokens.tail, depth, nextIsBlockHead)
+        }) ::: token :: (token match {
+          case _: BlockPrefix => indentProcess(tokens.tail, depth, isBlockHead = true)
+          case _              => indentProcess(tokens.tail, depth)
+        })
       case None =>
         val dedentTokens = List.fill(indent){ Dedent }
         dedentTokens
