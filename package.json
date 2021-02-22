@@ -25,7 +25,12 @@
 				"id": "markdown5",
 				"extensions": [".markdown5"]
 			}
-		]
+		],
+		"grammars": [{
+            "language": "markdown5",
+            "scopeName": "source.markdown5",
+            "path": "./syntaxes/markdown5.tmLanguage.json"
+        }]
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
