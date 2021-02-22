@@ -10,34 +10,45 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:markdown5.helloWorld"
+		"onLanguage:markdown5"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
-		"commands": [
-			{
-				"command": "markdown5.helloWorld",
-				"title": "Hello World"
-			}
-		],
 		"languages": [
 			{
 				"id": "markdown5",
-				"extensions": [".markdown5"]
+				"extensions": [".markdown5", ".m5"]
 			}
 		],
 		"grammars": [{
             "language": "markdown5",
             "scopeName": "source.markdown5",
             "path": "./syntaxes/markdown5.tmLanguage.json"
-        }]
+		}],
+		"viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "markdown5-view",
+                    "title": "markdown5 explorer",
+                    "icon": "./resources/markdown5.svg"
+                }
+            ]
+        },
+        "views": {
+            "markdown5-view": [
+                {
+                    "id": "markdown5",
+                    "name": "markdown5"
+                }
+            ]
+        }
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
 		"pretest": "npm run compile && npm run lint",
-		"lint": "eslint src --ext ts",
+		"lint": "eslint src --ext ts --fix",
 		"test": "node ./out/test/runTest.js"
 	},
 	"devDependencies": {
