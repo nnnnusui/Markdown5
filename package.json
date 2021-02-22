@@ -19,6 +19,12 @@
 				"command": "markdown5.helloWorld",
 				"title": "Hello World"
 			}
+		],
+		"languages": [
+			{
+				"id": "markdown5",
+				"extensions": [".markdown5"]
+			}
 		]
 	},
 	"scripts": {
