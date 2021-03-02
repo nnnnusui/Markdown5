@@ -15,6 +15,15 @@ suite("Extension Test Suite", () => {
   });
 
   test("Parset test", () => {
-    assert.strictEqual(Parser().parse(["# test", "istest~"]), "");
+    assert.strictEqual(
+      Parser().parse(
+        `
+  # てすと
+    てすとです。
+これはてすと。
+      `.split("\n")
+      ),
+      ""
+    );
   }); // Debug print
 });
