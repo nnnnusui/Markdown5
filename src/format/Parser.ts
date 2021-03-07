@@ -1,4 +1,3 @@
-
 const enum TokenKind {
   Indent,
   Section,
@@ -6,49 +5,80 @@ const enum TokenKind {
   Text,
 }
 type Indent = {
-  kind: TokenKind.Indent,
-  value: String,
-}
+  kind: TokenKind.Indent;
+  value: string;
+};
 type Text = {
-  kind: TokenKind.Text,
-  value: String,
-}
+  kind: TokenKind.Text;
+  value: string;
+};
 type Header = {
-  kind: TokenKind.Header,
-  text: String,
-}
+  kind: TokenKind.Header;
+  text: string;
+};
 type Section = {
-  kind: TokenKind.Section,
-  header: Header,
-  child: Content[],
-}
-type Content = Section | Text
+  kind: TokenKind.Section;
+  header: Header;
+  child: Content[];
+};
+type Content = Section | Text;
 
-type Result<Err, Ok> = {
-  ok: true,
-  get: Ok,
-} | {
-  ok: false,
-  get: Err,
+type Result<Err, Ok> =
+  | {
+      ok: true;
+      get: Ok;
+    }
+  | {
+      ok: false;
+      get: Err;
+    };
+function ok<T>(it: T) {
+  return {
+    ok: true,
+    get: it,
+  } as const;
+}
+function err<T>(it: T) {
+  return {
+    ok: false,
+    get: it,
+  } as const;
 }
 
+type Parser<A, Src> = (src: Src) => Result<string, [A, Src]>;
+const symbol = (it: string): Parser<string, string> => (src) => {
+  const head = src.slice(0, it.length);
+  const tail = src.slice(it.length);
+  if (head == it) {
+    return ok([head, tail]);
+  } else {
+    return err("err");
+  }
+};
 const Parser = () => {
-  function ok<T>(it: T) {
-    return {
-      ok: true,
-      get: it,
-    } as const
+  function tokenizer<Token, A, Src>(
+    parser: Parser<A, Src>,
+    tokenize: (result: A) => Token
+  ) {
+    return (src: Src) => {
+      const result = parser(src);
+      if (!result.ok) {
+        return result;
+      }
+      return {
+        ...result,
+        get: [tokenize(result.get[0]), result.get[1]] as const,
+      };
+    };
   }
-  function err<T>(it: T) {
-    return {
-      ok: false,
-      get: it,
-    } as const
-  }
-  function parse(lines: string[]) {
-    const section = parseSection(lines);
+  const newLine = tokenizer(symbol("\n"), () => {});
+
+  function parse(text: string) {
+    const section = parseSection(text);
+    return newLine(text);
     return { section };
   }
+
   function dropEmptyLines(lines: string[]) {
     function recursion(lines: string[]): string[] {
       const [head, ...tails] = lines;
@@ -59,19 +89,20 @@ const Parser = () => {
     }
     return recursion(lines);
   }
-  function parseSection(lines: string[]) {
+  function parseSection(text: string) {
+    const lines = text.split("\n");
     const [head, ...tails] = dropEmptyLines(lines);
     const indentRes = parseIndent(head);
     if (!indentRes.ok) {
       return;
     }
-    const indent = indentRes.get
-    const indentLength = indent.value.length
+    const indent = indentRes.get;
+    const indentLength = indent.value.length;
     const headerRes = parseHeader(head.slice(indentLength));
     if (!headerRes.ok) {
       return;
     }
-    const header = headerRes.get
+    const header = headerRes.get;
 
     function getContentLines(
       lines: string[],
@@ -97,13 +128,13 @@ const Parser = () => {
       return err("failure on parseHeader()");
     }
     const content = line.slice(prefix.length);
-    return ok({kind: TokenKind.Header, text: content});
+    return ok({ kind: TokenKind.Header, text: content });
   }
   function parseIndent(line: string): Result<string, Indent> {
     const trimed = line.trimStart();
     const depth = line.length - trimed.length;
     const indent = line.slice(0, depth);
-    return ok({kind: TokenKind.Indent, value: indent});
+    return ok({ kind: TokenKind.Indent, value: indent });
   }
   return { parse };
 };

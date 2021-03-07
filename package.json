@@ -61,7 +61,7 @@
 		"fix:eslint": "npm run lint:eslint -- --fix",
 		"fix": "run-s fix:*",
 		"test:runTest": "node ./out/test/runTest.js",
-		"test": "run-s fix:* test:*"
+		"test": "run-s test:*"
 	},
 	"devDependencies": {
 		"@types/glob": "^7.1.3",

@@ -21,7 +21,7 @@ suite("Extension Test Suite", () => {
   # てすと
     てすとです。
 これはてすと。
-      `.split("\n")
+      `
       ),
       ""
     );
