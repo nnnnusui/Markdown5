@@ -55,6 +55,25 @@ const symbol = (it: string): Parser<string, string> => (src) => {
     return err("err");
   }
 };
+function chain<A, B, Src>(
+  a: Parser<A, Src>,
+  b: Parser<B, Src>
+): Parser<[A, B], Src> {
+  return (src) => {
+    const resultA = a(src);
+    if (!resultA.ok) return err("");
+    const resultB = b(resultA.get[1]);
+    if (!resultB.ok) return err("");
+    return ok([[resultA.get[0], resultB.get[0]], resultB.get[1]]);
+  };
+}
+function chainR<L, R, Src>(func: Parser<[L, R], Src>): Parser<R, Src> {
+  return (src) => {
+    const result = func(src)
+    if(!result.ok) return result
+    return ok([result.get[0][1], result.get[1]])
+  }
+}
 const Parser = () => {
   function tokenizer<Token, A, Src>(
     parser: Parser<A, Src>,
