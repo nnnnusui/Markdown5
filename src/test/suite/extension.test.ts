@@ -51,7 +51,8 @@ suite("Parser Test Suite", () => {
   test("Parse test", () => {
     assert.strictEqual(
       Parser().parse(
-        `# てすと
+        `
+# てすと
     てすとです。
 これはてすと。
       `

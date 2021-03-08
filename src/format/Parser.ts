@@ -61,6 +61,13 @@ export const not = (it: string): Parser<string, string> => (src) => {
   if (head !== it) return ok({ result: head, src: tail });
   return err("err");
 };
+export function option<A, Src>(it: Parser<A, Src>): Parser<A | null, Src> {
+  return (src) => {
+    const result = it(src);
+    if (!result.ok) return ok({ result: null, src });
+    return result;
+  };
+}
 export function chain<A, B, Src>(
   a: Parser<A, Src>,
   b: Parser<B, Src>
@@ -103,16 +110,12 @@ export function choose<A, B, Src>(
   };
 }
 export function repeat<A, Src>(it: Parser<A, Src>): Parser<A[], Src> {
+  function recursion(src: Src, results: A[]): ReturnType<Parser<A[], Src>> {
+    const result = it(src);
+    if (!result.ok) return ok({ result: results, src });
+    return recursion(result.get.src, [...results, result.get.result]);
+  }
   return (src) => {
-    function recursion(src: Src, results: A[]): ReturnType<Parser<A[], Src>> {
-      const result = it(src);
-      if (!result.ok)
-        return ok({
-          result: results,
-          src,
-        });
-      return recursion(result.get.src, [...results, result.get.result]);
-    }
     return recursion(src, []);
   };
 }
@@ -136,22 +139,22 @@ const Parser = () => {
     };
   }
   const indent = repeat(not("\n"));
-  const line = chainL(chain(indent, symbol("\n")));
+  const line = chain(repeat(not("\n")), symbol("\n"));
 
   function parse(text: string) {
-    return chain(line, line)(text);
+    return line(text);
   }
 
-  function dropEmptyLines(lines: string[]) {
-    function recursion(lines: string[]): string[] {
-      const [head, ...tails] = lines;
-      if (head.trim() === "") {
-        return recursion(tails);
-      }
-      return lines;
-    }
-    return recursion(lines);
-  }
+  // function dropEmptyLines(lines: string[]) {
+  //   function recursion(lines: string[]): string[] {
+  //     const [head, ...tails] = lines;
+  //     if (head.trim() === "") {
+  //       return recursion(tails);
+  //     }
+  //     return lines;
+  //   }
+  //   return recursion(lines);
+  // }
   // function parseSection(text: string) {
   //   const lines = text.split("\n");
   //   const [head, ...tails] = dropEmptyLines(lines);
