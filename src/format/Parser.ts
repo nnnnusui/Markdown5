@@ -1,3 +1,5 @@
+import { stringify } from "querystring";
+
 const enum TokenKind {
   Indent,
   Section,
@@ -53,6 +55,12 @@ export const symbol = (it: string): Parser<string, string> => (src) => {
   if (head === it) return ok({ result: head, src: tail });
   return err("err");
 };
+export const not = (it: string): Parser<string, string> => (src) => {
+  const head = src.slice(0, it.length);
+  const tail = src.slice(it.length);
+  if (head !== it) return ok({ result: head, src: tail });
+  return err("err");
+};
 export function chain<A, B, Src>(
   a: Parser<A, Src>,
   b: Parser<B, Src>
@@ -75,6 +83,13 @@ export function chainR<L, R, Src>(func: Parser<[L, R], Src>): Parser<R, Src> {
     return ok({ result: result.get.result[1], src: result.get.src });
   };
 }
+export function chainL<L, R, Src>(func: Parser<[L, R], Src>): Parser<L, Src> {
+  return (src) => {
+    const result = func(src);
+    if (!result.ok) return result;
+    return ok({ result: result.get.result[0], src: result.get.src });
+  };
+}
 export function choose<A, B, Src>(
   a: Parser<A, Src>,
   b: Parser<B, Src>
@@ -89,20 +104,16 @@ export function choose<A, B, Src>(
 }
 export function repeat<A, Src>(it: Parser<A, Src>): Parser<A[], Src> {
   return (src) => {
-    function recursion(
-      beforeResult: ReturnType<Parser<A, Src>>,
-      results: A[]
-    ): ReturnType<Parser<A[], Src>> {
-      if (!beforeResult.ok) return err("never");
-      const result = it(beforeResult.get.src);
+    function recursion(src: Src, results: A[]): ReturnType<Parser<A[], Src>> {
+      const result = it(src);
       if (!result.ok)
         return ok({
-          result: [...results, beforeResult.get.result],
-          src: beforeResult.get.src,
+          result: results,
+          src,
         });
-      return recursion(result, [...results, result.get.result]);
+      return recursion(result.get.src, [...results, result.get.result]);
     }
-    return recursion(it(src), []);
+    return recursion(src, []);
   };
 }
 const Parser = () => {
@@ -124,11 +135,11 @@ const Parser = () => {
       };
     };
   }
-  const newLine = tokenizer(symbol("\n"), () => {});
+  const indent = repeat(not("\n"));
+  const line = chainL(chain(indent, symbol("\n")));
 
   function parse(text: string) {
-    // const section = parseSection(text);
-    return parseIndent(text);
+    return chain(line, line)(text);
   }
 
   function dropEmptyLines(lines: string[]) {
