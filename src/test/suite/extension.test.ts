@@ -3,7 +3,7 @@ import * as assert from "assert";
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
 import * as vscode from "vscode";
-import Parser, { choose, symbol, chain } from "../../format/Parser";
+import Parser, { choose, symbol, chain, repeat } from "../../format/Parser";
 // import * as myExtension from '../../extension';
 
 suite("Parser Test Suite", () => {
@@ -24,6 +24,15 @@ suite("Parser Test Suite", () => {
     const aAndB = chain(symbol("a"), symbol("b"));
     assert.strictEqual(aAndB("ab").ok, true);
     assert.strictEqual(aAndB("bab").ok, false);
+  });
+  test("repeat", () => {
+    const repA = repeat(symbol("a"));
+    const repResult = repA("aaabababaa");
+    assert.strictEqual(repResult.ok, true);
+    if (repResult.ok) assert.strictEqual(repResult.get.result.join(""), "aaa");
+    const repResult2 = repA("baab");
+    assert.strictEqual(repResult.ok, true);
+    if (repResult2.ok) assert.strictEqual(repResult2.get.result.join(""), "");
   });
 
   test("Parse test", () => {
