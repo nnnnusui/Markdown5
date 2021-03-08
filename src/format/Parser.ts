@@ -46,16 +46,13 @@ function err<T>(it: T) {
 }
 
 type Parser<A, Src> = (src: Src) => Result<string, [A, Src]>;
-const symbol = (it: string): Parser<string, string> => (src) => {
+export const symbol = (it: string): Parser<string, string> => (src) => {
   const head = src.slice(0, it.length);
   const tail = src.slice(it.length);
-  if (head == it) {
-    return ok([head, tail]);
-  } else {
-    return err("err");
-  }
+  if (head === it) return ok([head, tail]);
+  return err("err");
 };
-function chain<A, B, Src>(
+export function chain<A, B, Src>(
   a: Parser<A, Src>,
   b: Parser<B, Src>
 ): Parser<[A, B], Src> {
@@ -67,12 +64,24 @@ function chain<A, B, Src>(
     return ok([[resultA.get[0], resultB.get[0]], resultB.get[1]]);
   };
 }
-function chainR<L, R, Src>(func: Parser<[L, R], Src>): Parser<R, Src> {
+export function chainR<L, R, Src>(func: Parser<[L, R], Src>): Parser<R, Src> {
   return (src) => {
-    const result = func(src)
-    if(!result.ok) return result
-    return ok([result.get[0][1], result.get[1]])
-  }
+    const result = func(src);
+    if (!result.ok) return result;
+    return ok([result.get[0][1], result.get[1]]);
+  };
+}
+export function choose<A, B, Src>(
+  a: Parser<A, Src>,
+  b: Parser<B, Src>
+): Parser<A | B, Src> {
+  return (src) => {
+    const resultA = a(src);
+    if (resultA.ok) return resultA;
+    const resultB = b(src);
+    if (resultB.ok) return resultB;
+    return err("");
+  };
 }
 const Parser = () => {
   function tokenizer<Token, A, Src>(
@@ -81,9 +90,7 @@ const Parser = () => {
   ) {
     return (src: Src) => {
       const result = parser(src);
-      if (!result.ok) {
-        return result;
-      }
+      if (!result.ok) return result;
       return {
         ...result,
         get: [tokenize(result.get[0]), result.get[1]] as const,
@@ -94,7 +101,7 @@ const Parser = () => {
 
   function parse(text: string) {
     const section = parseSection(text);
-    return newLine(text);
+    return choose(symbol("\n"), symbol(" "))(text);
     return { section };
   }
 
