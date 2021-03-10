@@ -1,4 +1,7 @@
 import { stringify } from "querystring";
+import Option from "../type/Option";
+import Result from "../type/Result";
+import { ok } from "assert";
 
 const enum TokenKind {
   Indent,
@@ -25,184 +28,60 @@ type Section = {
 };
 type Content = Section | Text;
 
-type Result<Err, Ok> =
-  | {
-      ok: true;
-      get: Ok;
-    }
-  | {
-      ok: false;
-      get: Err;
-    };
-function ok<T>(it: T) {
-  return {
-    ok: true,
-    get: it,
-  } as const;
-}
-function err<T>(it: T) {
-  return {
-    ok: false,
-    get: it,
-  } as const;
-}
+type ParseResult = Result<[any, string], any>;
+type Parser = (src: string) => ParseResult;
+const r = Result<any, any>();
 
-type Parsed<A, Src> = { result: A; src: Src };
-type Parser<A, Src> = (src: Src) => Result<string, Parsed<A, Src>>;
-export const symbol = (it: string): Parser<string, string> => (src) => {
-  const head = src.slice(0, it.length);
-  const tail = src.slice(it.length);
-  if (head === it) return ok({ result: head, src: tail });
-  return err("err");
+const slice = (src: string, length: number) => {
+  const head = src.slice(0, length);
+  const tail = src.slice(length);
+  return [head, tail] as const;
 };
-export const not = (it: string): Parser<string, string> => (src) => {
-  const head = src.slice(0, it.length);
-  const tail = src.slice(it.length);
-  if (head !== it) return ok({ result: head, src: tail });
-  return err("err");
+const any: Parser = (src: string) => r.ok(slice(src, 1));
+const match = (it: string): Parser => (src) => {
+  const sliced = slice(src, it.length);
+  if (it === sliced[0]) return r.ok(sliced);
+  return r.err(`error on match: [${sliced[0]}] should be [${it}]`);
 };
-export function option<A, Src>(it: Parser<A, Src>): Parser<A | null, Src> {
-  return (src) => {
-    const result = it(src);
-    if (!result.ok) return ok({ result: null, src });
-    return result;
-  };
-}
-export function chain<A, B, Src>(
-  a: Parser<A, Src>,
-  b: Parser<B, Src>
-): Parser<[A, B], Src> {
-  return (src) => {
-    const resultA = a(src);
-    if (!resultA.ok) return err("");
-    const resultB = b(resultA.get.src);
-    if (!resultB.ok) return err("");
-    return ok({
-      result: [resultA.get.result, resultB.get.result],
-      src: resultB.get.src,
-    });
-  };
-}
-export function chainR<L, R, Src>(func: Parser<[L, R], Src>): Parser<R, Src> {
-  return (src) => {
-    const result = func(src);
-    if (!result.ok) return result;
-    return ok({ result: result.get.result[1], src: result.get.src });
-  };
-}
-export function chainL<L, R, Src>(func: Parser<[L, R], Src>): Parser<L, Src> {
-  return (src) => {
-    const result = func(src);
-    if (!result.ok) return result;
-    return ok({ result: result.get.result[0], src: result.get.src });
-  };
-}
-export function choose<A, B, Src>(
-  a: Parser<A, Src>,
-  b: Parser<B, Src>
-): Parser<A | B, Src> {
-  return (src) => {
-    const resultA = a(src);
-    if (resultA.ok) return resultA;
-    const resultB = b(src);
-    if (resultB.ok) return resultB;
-    return err("");
-  };
-}
-export function repeat<A, Src>(it: Parser<A, Src>): Parser<A[], Src> {
-  function recursion(src: Src, results: A[]): ReturnType<Parser<A[], Src>> {
-    const result = it(src);
-    if (!result.ok) return ok({ result: results, src });
-    return recursion(result.get.src, [...results, result.get.result]);
-  }
-  return (src) => {
-    return recursion(src, []);
-  };
-}
-const Parser = () => {
-  type Tokenized<T> = {
-    token: T;
-    tail: string;
-  };
-  type TokenizeResult<T> = Result<string, Tokenized<T>>;
-  function tokenizer<Token, A, Src>(
-    parser: Parser<A, Src>,
-    tokenize: (result: A) => Token
-  ): Parser<Token, Src> {
-    return (src: Src) => {
-      const result = parser(src);
-      if (!result.ok) return result;
-      return {
-        ...result,
-        get: { result: tokenize(result.get.result), src: result.get.src },
-      };
-    };
-  }
-  const indent = repeat(not("\n"));
-  const line = chain(repeat(not("\n")), symbol("\n"));
-
-  function parse(text: string) {
-    return line(text);
-  }
-
-  // function dropEmptyLines(lines: string[]) {
-  //   function recursion(lines: string[]): string[] {
-  //     const [head, ...tails] = lines;
-  //     if (head.trim() === "") {
-  //       return recursion(tails);
-  //     }
-  //     return lines;
-  //   }
-  //   return recursion(lines);
-  // }
-  // function parseSection(text: string) {
-  //   const lines = text.split("\n");
-  //   const [head, ...tails] = dropEmptyLines(lines);
-  //   const indentRes = parseIndent(head);
-  //   if (!indentRes.ok) {
-  //     return;
-  //   }
-  //   const indent = indentRes.get;
-  //   const indentLength = indent.value.length;
-  //   const headerRes = parseHeader(head.slice(indentLength));
-  //   if (!headerRes.ok) {
-  //     return;
-  //   }
-  //   const header = headerRes.get;
-
-  //   function getContentLines(
-  //     lines: string[],
-  //     result: string[] = []
-  //   ): [string[], string[]] {
-  //     const [head, ...tails] = lines;
-  //     const isNotEmptyLine = head.trim() !== "";
-  //     const dedented = head.slice(0, indentLength) !== indent.value;
-  //     if (isNotEmptyLine && dedented) {
-  //       return [result, lines];
-  //     }
-  //     return getContentLines(tails, [...result, head]);
-  //   }
-  //   const [contentLines, afters] = getContentLines(tails);
-  //   return {
-  //     header,
-  //     content: contentLines.map((it) => it.slice(indentLength)),
-  //   };
-  // }
-  function parseHeader(line: string): Result<string, Header> {
-    const prefix = "# ";
-    if (!line.startsWith(prefix)) {
-      return err("failure on parseHeader()");
-    }
-    const content = line.slice(prefix.length);
-    return ok({ kind: TokenKind.Header, text: content });
-  }
-  function parseIndent(text: string): TokenizeResult<Indent> {
-    const trimed = text.trimStart();
-    const depth = text.length - trimed.length;
-    const indent = text.slice(0, depth);
-    const tail = text.slice(depth);
-    return ok({ token: { kind: TokenKind.Indent, value: indent }, tail });
-  }
-  return { parse };
+const not = (it: string): Parser => (src) => {
+  const sliced = slice(src, it.length);
+  if (it !== sliced[0]) return r.ok(sliced);
+  return r.err(`error on not:[${sliced[0]}] should not be [${it}]`);
 };
-export default Parser;
+
+const chain = (parsers: Parser[]): Parser => (src) => {
+  const recursion = (
+    parsers: Parser[],
+    before: ParseResult,
+    result: string
+  ): ParseResult => {
+    const [head, tails] = before.get;
+    if (parsers.length <= 0) return r.ok([`${result}${head}`, tails]);
+    const [current, ...nexts] = parsers;
+    const after = current(tails);
+    if (!after.ok) return after;
+    return recursion(nexts, after, result + head);
+  };
+  const [head, ...tails] = parsers;
+  const first = head(src);
+  if (!first.ok) return first;
+  return recursion(tails, first, "");
+};
+
+const repeat = (parser: Parser): Parser => (src) => {
+  const recursion = (before: ParseResult, result: string): ParseResult => {
+    const [head, tails] = before.get;
+    const after = parser(tails);
+    if (!after.ok || tails === "") return r.ok([`${result}${head}`, tails]);
+    return recursion(after, result + head);
+  };
+  const before = parser(src);
+  if (!before.ok) return r.ok(["", src]);
+  return recursion(before, "");
+};
+
+const parse = (text: string) => {
+  const header = chain([match("# "), repeat(not("\n"))]);
+  return header(text);
+};
+export { parse };
