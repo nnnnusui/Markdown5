@@ -8,5 +8,11 @@ import { parse } from "../../format/Parser";
 
 suite("Parser Test Suite", () => {
   test("Parse test", () =>
-    assert.strictEqual(parse("# Header").get, undefined)); // Debug print
+    assert.strictEqual(
+      parse(`
+    # Header
+    content
+    `).get,
+      undefined
+    )); // Debug print
 });

@@ -67,6 +67,17 @@ const chain = (parsers: Parser[]): Parser => (src) => {
   if (!first.ok) return first;
   return recursion(tails, first, "");
 };
+const or = (parsers: Parser[]): Parser => (src) => {
+  const recursion = (parsers: Parser[]): ParseResult => {
+    if (parsers.length <= 0)
+      return r.err(`error on or: not match [${parsers}]`);
+    const [current, ...nexts] = parsers;
+    const result = current(src);
+    if (result.ok) return result;
+    return recursion(nexts);
+  };
+  return recursion(parsers);
+};
 
 const repeat = (parser: Parser): Parser => (src) => {
   const recursion = (before: ParseResult, result: string): ParseResult => {
@@ -81,7 +92,13 @@ const repeat = (parser: Parser): Parser => (src) => {
 };
 
 const parse = (text: string) => {
-  const header = chain([match("# "), repeat(not("\n"))]);
-  return header(text);
+  const to = (it: string) =>
+    or([chain([repeat(not(it)), match(it)]), repeat(not(it))]);
+
+  const eol /* end of line */ = "\n";
+  const header = chain([match("# "), to(eol)]);
+  const lineElement = or([header, to(eol)]);
+  const lines = repeat(lineElement);
+  return lines(text);
 };
 export { parse };
