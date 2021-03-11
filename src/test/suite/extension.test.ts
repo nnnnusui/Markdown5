@@ -10,8 +10,11 @@ suite("Parser Test Suite", () => {
   test("Parse test", () =>
     assert.strictEqual(
       parse(`
-    # Header
-    content
+    # Header1
+    content1
+      # Header2
+      content2
+    con1-2
     `).get,
       undefined
     )); // Debug print
