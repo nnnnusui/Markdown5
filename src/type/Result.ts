@@ -9,10 +9,7 @@ type Props<O, E> = {
   getOrNull: O | null;
   getOrElse: (or: O) => O;
   getOrThrow: () => O;
-  use: <T>(
-    onOk: (it: O) => Result<T, E>,
-    onErr: (it: E) => Result<T, E>
-  ) => Result<T, E>;
+  use: <Return>(onOk: (it: O) => Return, onErr: (it: E) => Return) => Return;
 };
 
 const props = <O, E>(self: Self<O, E>): Props<O, E> => {
