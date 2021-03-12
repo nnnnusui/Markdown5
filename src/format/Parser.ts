@@ -1,32 +1,14 @@
 import Result from "../type/Result";
 
-const enum TokenKind {
-  Indent,
-  Section,
-  Header,
-  Text,
-}
-type Indent = {
-  kind: TokenKind.Indent;
-  value: string;
-};
-type Text = {
-  kind: TokenKind.Text;
-  value: string;
-};
-type Header = {
-  kind: TokenKind.Header;
-  text: string;
-};
-type Section = {
-  kind: TokenKind.Section;
-  header: Header;
-  child: Content[];
-};
-type Content = Section | Text;
-
 type ParseResult<T> = Result<[T, string], any>;
 type Parser<T> = (src: string) => ParseResult<T>;
+
+type TypeFromParser<P> = P extends Parser<infer T> ? T : never;
+type UnionTypeFromParsers<P> = P extends Parser<any>[]
+  ? TypeFromParser<P[number]>
+  : never;
+type UnionParser<T extends Parser<any>[]> = Parser<UnionTypeFromParsers<T>>;
+
 const r = Result<any, any>();
 
 const slice = (src: string, length: number) => {
@@ -64,16 +46,19 @@ const chain = <T>(parsers: Parser<T>[]): Parser<T[]> => (src) => {
   if (!first.ok) return r.err(first[0]);
   return recursion(tails, first, []);
 };
-const or = <T>(parsers: Parser<T>[]): Parser<T> => (src) => {
-  const recursion = (parsers: Parser<T>[]): ParseResult<T> => {
-    if (parsers.length <= 0)
+
+const or = <Parsers extends Parser<any>[]>(
+  parsers: Parsers
+): UnionParser<Parsers> => (src) => {
+  const recursion = (index: number): ReturnType<UnionParser<Parsers>> => {
+    if (parsers.length <= index)
       return r.err(`error on or: not match [${parsers}]`);
-    const [current, ...nexts] = parsers;
+    const current = parsers[index];
     const result = current(src);
     if (result.ok) return result;
-    return recursion(nexts);
+    return recursion(index + 1);
   };
-  return recursion(parsers);
+  return recursion(0);
 };
 
 const repeat = <T>(parser: Parser<T>): Parser<T[]> => (src) => {
@@ -104,35 +89,62 @@ const convert = <A, B>(parser: Parser<A>, func: (a: A) => B): Parser<B> => (
 };
 
 const parse = (text: string) => {
-  const to = (keyword: string) => {
+  const to = (keyword: string): Parser<string> => {
     const content = convert(repeat(not(keyword)), (it) => it.join(""));
-    const hasKeyword = convert(chain([content, match(keyword)]), (it) =>
-      it.join("")
+    const hasKeyword = convert(
+      chain([content, match(keyword)]),
+      ([content]) => content
     );
     return or([hasKeyword, content]);
   };
 
   const eol /* end of line */ = "\n";
-  const indent = or([match(" "), match("\t")]);
-  const indents = convert(repeat(indent), (it) => it.join(""));
+  const indentChar = or([match(" "), match("\t")]);
 
-  const header = convert(chain([match("# "), to(eol)]), ([, text]) => text);
-  const section: Parser<string> = (src) => {
-    const firstLine = chain([indents, header])(src);
-    const firstLineResult = firstLine.getOrNull;
-    if (!firstLineResult) return r.err("error on section: header no found.");
-    const [[indent, headerText], tail] = firstLineResult;
-    const line = convert( // TODO: 入れ子対応
-      chain([match(indent), not("  "), to(eol)]),
-      ([, notIndent, line]) => notIndent + line
-    );
-    const lines = convert(
-      repeat(line),
-      (it) => `${headerText}${it.join("")}`
-    )(tail);
-    return lines;
-  };
-  const content = or([section, to(eol)]);
+  const enum TokenKind {
+    indent,
+    line,
+    section,
+    sectionHeader,
+  }
+  type Indent = readonly [TokenKind.indent, string];
+  type Line = readonly [TokenKind.line, string];
+  type SectionHeader = readonly [TokenKind.sectionHeader, string];
+  type Section = readonly [
+    TokenKind.section,
+    { header: SectionHeader; contents: Content[] }
+  ];
+  type Content = Section | Line;
+
+  const indent: Parser<Indent> = convert(
+    repeat(indentChar),
+    (it) => [TokenKind.indent, it.join("")] as const
+  );
+  const line: Parser<Line> = convert(
+    to(eol),
+    (it) => [TokenKind.line, it] as const
+  );
+
+  const header: Parser<SectionHeader> = convert(
+    chain([match("# "), to(eol)]),
+    ([, text]) => [TokenKind.sectionHeader, text] as const
+  );
+  // const section: Parser<Section> = (src) => {
+  //   const a = [indent, header];
+
+  //   const firstLine = chain([indent, header])(src);
+  //   const firstLineResult = firstLine.getOrNull;
+  //   if (!firstLineResult) return r.err("error on section: header no found.");
+  //   const [[indentText, headerText], tail] = firstLineResult;
+  //   const contentsResult = contents(tail).getOrNull;
+  //   if (!contentsResult) return r.err("error on section: contents not found.");
+  //   const [content, t] = contentsResult;
+  //   return r.ok([
+  //     [TokenKind.section, { header: headerText, contents: content }],
+  //     t,
+  //   ]);
+  // };
+  const content = or([header, line]);
   const contents = repeat(content);
   return contents(text);
 };
