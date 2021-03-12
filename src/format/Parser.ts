@@ -12,7 +12,7 @@ type UnionParser<T extends readonly Parser<any>[]> = Parser<
 >;
 
 type TupleFromParser<P extends readonly Parser<any>[]> = {
-  [Key in keyof P]: P[Key] extends Parser<infer T> ? T : never;
+  [Key in keyof P]: TypeFromParser<P[Key]>;
 };
 type TupledParser<T extends readonly Parser<any>[]> = Parser<
   TupleFromParser<T>
@@ -154,7 +154,7 @@ const parse = (text: string) => {
   };
   const content = (indent: Indent) =>
     convert(
-      chain([match(indent[1]), or([section, line])]), // TODO: return never nannde? 
+      chain([match(indent[1]), or([section, line])]), // TODO: return never nannde?
       ([indent, content]) => content
     );
   const contents = (indent: Indent = [TokenKind.indent, ""]) =>
