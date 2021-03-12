@@ -1,14 +1,16 @@
 import Result from "../type/Result";
 import { Parser, TupledParsersResult, UnifiedParsersResult } from "./Types";
 
+export const ParseResult = Result<any, string>();
+const r = ParseResult;
 const slice = (src: string, length: number) => {
   const head = src.slice(0, length);
   const tail = src.slice(length);
   return [head, tail] as const;
 };
 
-const r = Result<any, string>();
-const parser = <T>(parse: Parser<T>): Parser<T> => (src: string) => parse(src);
+export const parser = <T>(parse: Parser<T>): Parser<T> => (src: string) =>
+  parse(src);
 
 export const any = parser((src: string) => r.ok(slice(src, 1)));
 export const same = (it: string) =>
@@ -28,14 +30,19 @@ export const repeat = <T>(source: Parser<T>) =>
   parser<T[]>((src) => {
     const recursion = (src: string, results: T[]): [T[], string] =>
       source(src).use(
-        ([head, tail]) => recursion(tail, [...results, head]),
+        ([head, tail]) => {
+          const next = [...results, head];
+          if (tail === "") return [next, tail];
+          return recursion(tail, [...results, head]);
+        },
         () => [results, src]
       );
-    return r.ok(recursion(src, []));
+    const [results, tail] = recursion(src, []);
+    return r.ok([results, tail]);
   });
 
 type Parsers = readonly Parser<any>[];
-export const chain = <T extends Parsers>(parsers: T) =>
+export const chain = <T extends Parsers>(...parsers: T) =>
   parser<TupledParsersResult<T>>((src) => {
     const recursion = (
       index: number,
@@ -50,7 +57,7 @@ export const chain = <T extends Parsers>(parsers: T) =>
     };
     return recursion(0, src, []);
   });
-export const or = <T extends Parsers>(parsers: T) =>
+export const or = <T extends Parsers>(...parsers: T) =>
   parser<UnifiedParsersResult<T>>((src) => {
     const recursion = (
       index: number
