@@ -4,18 +4,15 @@ type ParseResult<T> = Result<[T, string], any>;
 type Parser<T> = (src: string) => ParseResult<T>;
 
 type TypeFromParser<P> = P extends Parser<infer T> ? T : never;
-type UnionTypeFromParsers<P> = P extends Parser<any>[]
-  ? TypeFromParser<P[number]>
-  : never;
-type UnionParser<T extends Parser<any>[]> = Parser<UnionTypeFromParsers<T>>;
-
-const r = Result<any, any>();
+type UnionParser<T extends Parser<any>[]> = Parser<TypeFromParser<T[number]>>;
 
 const slice = (src: string, length: number) => {
   const head = src.slice(0, length);
   const tail = src.slice(length);
   return [head, tail] as const;
 };
+
+const r = Result<any, any>();
 const any: Parser<string> = (src: string) => r.ok(slice(src, 1));
 const match = (it: string): Parser<string> => (src) => {
   const sliced = slice(src, it.length);
@@ -43,8 +40,10 @@ const chain = <T>(parsers: Parser<T>[]): Parser<T[]> => (src) => {
   };
   const [head, ...tails] = parsers;
   const first = head(src);
-  if (!first.ok) return r.err(first[0]);
-  return recursion(tails, first, []);
+  return first.use(
+    () => recursion(tails, first, []),
+    (it) => r.err(it)
+  );
 };
 
 const or = <Parsers extends Parser<any>[]>(
@@ -53,10 +52,10 @@ const or = <Parsers extends Parser<any>[]>(
   const recursion = (index: number): ReturnType<UnionParser<Parsers>> => {
     if (parsers.length <= index)
       return r.err(`error on or: not match [${parsers}]`);
-    const current = parsers[index];
-    const result = current(src);
-    if (result.ok) return result;
-    return recursion(index + 1);
+    return parsers[index](src).use(
+      (it) => r.ok(it),
+      () => recursion(index + 1)
+    );
   };
   return recursion(0);
 };
@@ -67,26 +66,29 @@ const repeat = <T>(parser: Parser<T>): Parser<T[]> => (src) => {
     results: T[]
   ): ParseResult<T[]> => {
     const [head, tails] = before.get;
+    const next = [...results, head];
+    if (tails === "") return r.ok([next, tails]);
     const after = parser(tails);
-    if (!after.ok || tails === "") return r.ok([[...results, head], tails]);
-    return recursion(after, [...results, head]);
+    return after.use(
+      () => recursion(after, next),
+      () => r.ok([next, tails])
+    );
   };
   const before = parser(src);
-  if (!before.ok) return r.ok([[], src]);
-  return recursion(before, []);
+  return before.use(
+    () => recursion(before, []),
+    () => r.ok([[], src])
+  );
 };
 
-const convert = <A, B>(parser: Parser<A>, func: (a: A) => B): Parser<B> => (
-  src
-) => {
-  const parsed = parser(src);
-  const result = parsed.getOrNull;
-  if (result) {
-    const [head, tail] = result;
-    return r.ok([func(head), tail]);
-  }
-  return r.err(parsed.get);
-};
+const convert = <Before, After>(
+  parser: Parser<Before>,
+  func: (before: Before) => After
+): Parser<After> => (src) =>
+  parser(src).use(
+    ([result, tail]) => r.ok([func(result), tail]),
+    (it) => r.err(it)
+  );
 
 const parse = (text: string) => {
   const to = (keyword: string): Parser<string> => {

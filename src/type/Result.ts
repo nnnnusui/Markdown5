@@ -9,6 +9,10 @@ type Props<O, E> = {
   getOrNull: O | null;
   getOrElse: (or: O) => O;
   getOrThrow: () => O;
+  use: <T>(
+    onOk: (it: O) => Result<T, E>,
+    onErr: (it: E) => Result<T, E>
+  ) => Result<T, E>;
 };
 
 const props = <O, E>(self: Self<O, E>): Props<O, E> => {
@@ -21,6 +25,7 @@ const props = <O, E>(self: Self<O, E>): Props<O, E> => {
       if (self.ok) return self[0];
       throw new Error(`${self[0]}`);
     },
+    use: (onOk, onErr) => (self.ok ? onOk(self[0]) : onErr(self[0])),
   };
 };
 const applyProps = <O, E>(result: Self<O, E>) => ({
