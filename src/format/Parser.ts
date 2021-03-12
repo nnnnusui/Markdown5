@@ -4,7 +4,19 @@ type ParseResult<T> = Result<[T, string], any>;
 type Parser<T> = (src: string) => ParseResult<T>;
 
 type TypeFromParser<P> = P extends Parser<infer T> ? T : never;
-type UnionParser<T extends Parser<any>[]> = Parser<TypeFromParser<T[number]>>;
+type UnionTypeFromParsers<T extends readonly Parser<any>[]> = TypeFromParser<
+  T[number]
+>;
+type UnionParser<T extends readonly Parser<any>[]> = Parser<
+  TypeFromParser<T[number]>
+>;
+
+type TupleFromParser<P extends readonly Parser<any>[]> = {
+  [Key in keyof P]: P[Key] extends Parser<infer T> ? T : never;
+};
+type TupledParser<T extends readonly Parser<any>[]> = Parser<
+  TupleFromParser<T>
+>;
 
 const slice = (src: string, length: number) => {
   const head = src.slice(0, length);
@@ -25,25 +37,21 @@ const not = (it: string): Parser<string> => (src) => {
   return r.err(`error on not:[${sliced[0]}] should not be [${it}]`);
 };
 
-const chain = <T>(parsers: Parser<T>[]): Parser<T[]> => (src) => {
+const chain = <Parsers extends readonly Parser<any>[]>(
+  parsers: Parsers
+): TupledParser<Parsers> => (src) => {
   const recursion = (
-    parsers: Parser<T>[],
-    before: ParseResult<T>,
-    result: T[]
-  ): ParseResult<T[]> => {
-    const [head, tails] = before.get;
-    if (parsers.length <= 0) return r.ok([[...result, head], tails]);
-    const [current, ...nexts] = parsers;
-    const after = current(tails);
-    if (!after.ok) return r.err(after[0]);
-    return recursion(nexts, after, [...result, head]);
+    index: number,
+    src: string,
+    results: UnionTypeFromParsers<Parsers>[]
+  ): ReturnType<TupledParser<Parsers>> => {
+    if (parsers.length <= index) return r.ok([results, src]);
+    return parsers[index](src).use(
+      ([head, tail]) => recursion(index + 1, tail, [...results, head]),
+      (it) => r.err(it)
+    );
   };
-  const [head, ...tails] = parsers;
-  const first = head(src);
-  return first.use(
-    () => recursion(tails, first, []),
-    (it) => r.err(it)
-  );
+  return recursion(0, src, []);
 };
 
 const or = <Parsers extends Parser<any>[]>(
@@ -102,6 +110,8 @@ const parse = (text: string) => {
 
   const eol /* end of line */ = "\n";
   const indentChar = or([match(" "), match("\t")]);
+  const empties = convert(repeat(indentChar), (it) => it.join(""));
+  const emptyLine = chain([empties, match(eol)]);
 
   const enum TokenKind {
     indent,
@@ -127,27 +137,28 @@ const parse = (text: string) => {
     (it) => [TokenKind.line, it] as const
   );
 
-  const header: Parser<SectionHeader> = convert(
-    chain([match("# "), to(eol)]),
-    ([, text]) => [TokenKind.sectionHeader, text] as const
-  );
-  // const section: Parser<Section> = (src) => {
-  //   const a = [indent, header];
-
-  //   const firstLine = chain([indent, header])(src);
-  //   const firstLineResult = firstLine.getOrNull;
-  //   if (!firstLineResult) return r.err("error on section: header no found.");
-  //   const [[indentText, headerText], tail] = firstLineResult;
-  //   const contentsResult = contents(tail).getOrNull;
-  //   if (!contentsResult) return r.err("error on section: contents not found.");
-  //   const [content, t] = contentsResult;
-  //   return r.ok([
-  //     [TokenKind.section, { header: headerText, contents: content }],
-  //     t,
-  //   ]);
-  // };
-  const content = or([header, line]);
-  const contents = repeat(content);
-  return contents(text);
+  const section: Parser<Section> = (src) => {
+    const header: Parser<SectionHeader> = convert(
+      chain([match("# "), to(eol)]),
+      ([, text]) => [TokenKind.sectionHeader, text] as const
+    );
+    return chain([indent, header] as const)(src).use(
+      ([[indent, header], tail]) =>
+        contents(indent)(tail).use(
+          ([contents, tail]) =>
+            r.ok([[TokenKind.section, { header, contents }], tail]),
+          (it) => r.err(it)
+        ),
+      (it) => r.err(it)
+    );
+  };
+  const content = (indent: Indent) =>
+    convert(
+      chain([match(indent[1]), or([section, line])]), // TODO: return never nannde? 
+      ([indent, content]) => content
+    );
+  const contents = (indent: Indent = [TokenKind.indent, ""]) =>
+    repeat(content(indent));
+  return contents()(text);
 };
 export { parse };
