@@ -1,82 +1,76 @@
-import Result from "../type/Result";
-import { Parser, TupledParsersResult, UnifiedParsersResult } from "./Types";
+import {
+  Parser,
+  Parsers,
+  TupledParsersResult,
+  ParsersSrc,
+  UnifiedParsersResult,
+} from "./Types";
 
-export const ParseResult = Result<any, string>();
-const r = ParseResult;
-const slice = (src: string, length: number) => {
-  const head = src.slice(0, length);
-  const tail = src.slice(length);
-  return [head, tail] as const;
+export const any = <Src>(): Parser<Src, Src> => <Src>(src: Src[]) => {
+  const [head, ...tails] = src;
+  return { ok: true, head, tails };
+};
+export const same = <Src>(it: Src): Parser<Src, Src> => (src: Src[]) => {
+  const { head, tails } = any<Src>()(src);
+  return { ok: it === head, head, tails };
 };
 
-export const parser = <T>(parse: Parser<T>): Parser<T> => (src: string) =>
-  parse(src);
-
-export const any = parser((src: string) => r.ok(slice(src, 1)));
-export const same = (it: string) =>
-  parser<string>((src) => {
-    const sliced = slice(src, it.length);
-    if (it === sliced[0]) return r.ok(sliced);
-    return r.err(`error on match: [${sliced[0]}] should be [${it}]`);
-  });
-export const not = (it: string) =>
-  parser<string>((src) => {
-    const sliced = slice(src, it.length);
-    if (it !== sliced[0]) return r.ok(sliced);
-    return r.err(`error on not:[${sliced[0]}] should not be [${it}]`);
-  });
-
-export const repeat = <T>(source: Parser<T>) =>
-  parser<T[]>((src) => {
-    const recursion = (src: string, results: T[]): [T[], string] =>
-      source(src).use(
-        ([head, tail]) => {
-          const next = [...results, head];
-          if (tail === "") return [next, tail];
-          return recursion(tail, [...results, head]);
-        },
-        () => [results, src]
-      );
-    const [results, tail] = recursion(src, []);
-    return r.ok([results, tail]);
-  });
-
-type Parsers = readonly Parser<any>[];
-export const chain = <T extends Parsers>(...parsers: T) =>
-  parser<TupledParsersResult<T>>((src) => {
-    const recursion = (
-      index: number,
-      src: string,
-      results: UnifiedParsersResult<T>[]
-    ): ReturnType<Parser<TupledParsersResult<T>>> => {
-      if (parsers.length <= index) return r.ok([results, src]);
-      return parsers[index](src).use(
-        ([head, tail]) => recursion(index + 1, tail, [...results, head]),
-        (it) => r.err(it)
-      );
-    };
-    return recursion(0, src, []);
-  });
-export const or = <T extends Parsers>(...parsers: T) =>
-  parser<UnifiedParsersResult<T>>((src) => {
-    const recursion = (
-      index: number
-    ): ReturnType<Parser<UnifiedParsersResult<T>>> => {
-      if (parsers.length <= index)
-        return r.err(`error on or: not match [${parsers}]`);
-      return parsers[index](src).use(
-        (it) => r.ok(it),
-        () => recursion(index + 1)
-      );
-    };
-    return recursion(0);
-  });
-
-export const convert = <Before, After>(
-  parser: Parser<Before>,
+export const not = <T, Src>(parser: Parser<T, Src>): Parser<Src, Src> => (
+  src: Src[]
+) => {
+  const { ok } = parser(src);
+  return { ...any<Src>()(src), ok: !ok };
+};
+export const repeat = <T, Src>(source: Parser<T, Src>): Parser<T[], Src> => (
+  src: Src[]
+) => {
+  const recursion = (src: Src[], results: T[]): [T[], Src[]] => {
+    const result = source(src);
+    if (!result.ok) return [results, src];
+    const { head, tails } = result;
+    const next = [...results, head];
+    if (tails.length <= 0) return [next, tails];
+    return recursion(tails, next);
+  };
+  const [results, tails] = recursion(src, []);
+  return { ok: true, head: results, tails };
+};
+export const convert = <Src, Before, After>(
+  parser: Parser<Before, Src>,
   func: (before: Before) => After
-): Parser<After> => (src) =>
-  parser(src).use(
-    ([result, tail]) => r.ok([func(result), tail]),
-    (it) => r.err(it)
-  );
+): Parser<After, Src> => (src) => {
+  const { ok, head, tails } = parser(src);
+  return { ok, head: func(head), tails };
+};
+
+export const chain = <T extends Parsers<any>>(
+  ...parsers: T
+): Parser<TupledParsersResult<typeof parsers>, ParsersSrc<T>> => (
+  src: ParsersSrc<T>[]
+) => {
+  const recursion = (
+    index: number,
+    src: ParsersSrc<T>[],
+    results: UnifiedParsersResult<typeof parsers>[]
+  ): any => {
+    if (parsers.length <= index) return { ok: true, head: results, tails: src };
+    const result = parsers[index](src);
+    if (!result.ok) return { ok: false, head: results, tails: src };
+    const { head, tails } = result;
+    return recursion(index + 1, tails, [...results, head]);
+  };
+  return recursion(0, src, []);
+};
+export const or = <T extends Parsers<any>>(
+  ...parsers: T
+): Parser<UnifiedParsersResult<typeof parsers>, ParsersSrc<T>> => (
+  src: ParsersSrc<T>[]
+) => {
+  const recursion = (index: number): any => {
+    if (parsers.length <= index) return { ok: false, head: [], tails: src };
+    const result = parsers[index](src);
+    if (result.ok) return result;
+    return recursion(index + 1);
+  };
+  return recursion(0);
+};

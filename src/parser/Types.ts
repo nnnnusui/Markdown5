@@ -1,10 +1,13 @@
-import Result from "../type/Result";
+export type Parser<Result, Src> = (
+  src: Src[]
+) => { ok: boolean; head: Result; tails: Src[] };
+export type ParseResult<P> = P extends Parser<infer T, any> ? T : never;
 
-export type Parser<T> = (src: string) => Result<readonly [T, string], string>;
-export type ParseResult<P> = P extends Parser<infer T> ? T : never;
-
-export type Parsers = readonly Parser<any>[];
-export type UnifiedParsersResult<T extends Parsers> = ParseResult<T[number]>;
-export type TupledParsersResult<P extends Parsers> = {
+export type Parsers<Src> = readonly Parser<any, Src>[];
+export type ParsersSrc<P> = P extends Parsers<infer T> ? T : never;
+export type UnifiedParsersResult<T extends Parsers<any>> = ParseResult<
+  T[number]
+>;
+export type TupledParsersResult<P extends Parsers<any>> = {
   [Key in keyof P]: ParseResult<P[Key]>;
 };
