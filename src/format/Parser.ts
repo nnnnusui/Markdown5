@@ -7,8 +7,9 @@ import or from "../parser/combinator/or";
 import repeat from "../parser/combinator/repeat";
 import same from "../parser/combinator/minimum/same";
 import { Parser } from "../parser/Types";
-import { Content, Indent, Line, Section, Token, TokenKind } from "./Types";
+import { Content, Indent, Paragraph, Section, Token, TokenKind } from "./Types";
 import option from "../parser/combinator/option";
+import chainL from "../parser/combinator/chainL";
 
 type Char = string & { length: 1 };
 declare global {
@@ -39,16 +40,26 @@ const sames = (it: string) => {
 
 const eol = sames("\n");
 const indentChar = or(sames(" "), sames("\t"));
+const line = convert(to(eol), (it) => it.join(""));
+const sectionHeaderPrefix = sames("# ");
 
 const indent: Parser<Indent, Src> = convert(repeat(indentChar), (it) =>
   t.indent(it.join(""))
 );
-const line: Parser<Line, Src> = convert(to(eol), (it) => t.line(it.join("")));
+const paragraph = (blockIndent: Indent): Parser<Paragraph, Src> => {
+  const nots = not(chain(indent, sectionHeaderPrefix));
+  const oneLine = chainR(nots, line);
+  const tails = repeat(chainR(sames(blockIndent[1]), oneLine));
+  const syntax = chain(oneLine, tails);
+  return convert(syntax, ([head, tails]) =>
+    t.paragraph([head, ...tails].join(""))
+  );
+};
 const section: Parser<Section, Src> = (src: Src[]) => {
   const { ok, head: blockIndent, tails } = indent(src);
   const header = (() => {
-    const syntax = chain(sames("# "), to(eol));
-    return convert(syntax, ([, line]) => t.sectionHeader(line.join("")));
+    const syntax = chain(sectionHeaderPrefix, line);
+    return convert(syntax, ([, line]) => t.sectionHeader(line));
   })();
   const syntax = chain(header, contents(blockIndent));
   const result = convert(syntax, ([header, contents]) =>
@@ -58,7 +69,7 @@ const section: Parser<Section, Src> = (src: Src[]) => {
 };
 
 const content = (indent: Indent): Parser<Content, Src> => {
-  const syntax = chain(sames(indent[1]), or(section, line));
+  const syntax = chain(sames(indent[1]), or(section, paragraph(indent)));
   return convert(syntax, ([, content]) => content);
 };
 const contents = (indent: Indent = [TokenKind.indent, ""]) =>
