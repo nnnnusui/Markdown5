@@ -1,13 +1,11 @@
-import {
-  convert,
-  repeat,
-  not,
-  chain,
-  same,
-  or,
-  any,
-  chainR,
-} from "../parser/Combinators";
+import any from "../parser/combinator/any";
+import chain from "../parser/combinator/chain";
+import chainR from "../parser/combinator/chainR";
+import convert from "../parser/combinator/convert";
+import not from "../parser/combinator/not";
+import or from "../parser/combinator/or";
+import repeat from "../parser/combinator/repeat";
+import same from "../parser/combinator/same";
 import { Parser } from "../parser/Types";
 import { Content, Indent, Line, Section, Token, TokenKind } from "./Types";
 
@@ -26,6 +24,7 @@ String.prototype[`chars`] = function () {
 };
 
 const t = Token;
+type Src = Char;
 const to = <T, Src>(parser: Parser<T, Src>): Parser<Src[], Src> => {
   const content = repeat(chainR(not(parser), any<Src>()));
   const hasTail = convert(chain(content, parser), ([content]) => content);
@@ -38,7 +37,6 @@ const sames = (it: string) => {
   return convert(chain(...sames), (it) => it.join(""));
 };
 
-type Src = Char;
 const eol = sames("\n");
 const indentChar = or(sames(" "), sames("\t"));
 

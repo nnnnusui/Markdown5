@@ -1,13 +1,11 @@
 import { expect } from "chai";
-import {
-  any,
-  chain,
-  convert,
-  not,
-  or,
-  repeat,
-  same,
-} from "../../parser/Combinators";
+import any from "../../parser/combinator/any";
+import chain from "../../parser/combinator/chain";
+import convert from "../../parser/combinator/convert";
+import not from "../../parser/combinator/not";
+import or from "../../parser/combinator/or";
+import repeat from "../../parser/combinator/repeat";
+import same from "../../parser/combinator/same";
 
 describe("Parser Test Suite", () => {
   it("any test", () => {
