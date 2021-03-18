@@ -1,83 +1,41 @@
 {
-	"publisher": "nnnnusui",
-	"name": "markdown5",
-	"displayName": "Markdown5",
-	"description": "_",
-	"version": "0.0.1",
-	"engines": {
-		"vscode": "^1.46.0"
-	},
-	"categories": [
-		"Other"
-	],
-	"activationEvents": [
-		"onLanguage:markdown5"
-	],
-	"main": "./out/extension.js",
-	"contributes": {
-		"languages": [
-			{
-				"id": "markdown5",
-				"extensions": [
-					".markdown5",
-					".m5"
-				]
-			}
-		],
-		"grammars": [
-			{
-				"language": "markdown5",
-				"scopeName": "source.markdown5",
-				"path": "./syntaxes/markdown5.tmLanguage.json"
-			}
-		],
-		"viewsContainers": {
-			"activitybar": [
-				{
-					"id": "markdown5-view",
-					"title": "markdown5 explorer",
-					"icon": "./resources/markdown5.svg"
-				}
-			]
-		},
-		"views": {
-			"markdown5-view": [
-				{
-					"id": "markdown5",
-					"name": "markdown5"
-				}
-			]
-		}
-	},
-	"scripts": {
-		"vscode:prepublish": "npm run compile",
-		"compile": "tsc -p ./",
-		"watch": "tsc -watch -p ./",
-		"pretest": "npm run compile && npm run lint",
-		"lint:prettier": "prettier src --check",
-		"lint:eslint": "eslint src",
-		"lint": "run-p lint:*",
-		"fix:prettier": "npm run lint:prettier -- --write",
-		"fix:eslint": "npm run lint:eslint -- --fix",
-		"fix": "run-s fix:*",
-		"test:runTest": "node ./out/test/runTest.js",
-		"test": "run-s test:*"
-	},
-	"devDependencies": {
-		"@types/glob": "^7.1.3",
-		"@types/mocha": "^8.0.4",
-		"@types/node": "^12.11.7",
-		"@types/vscode": "^1.46.0",
-		"@typescript-eslint/eslint-plugin": "^4.14.1",
-		"@typescript-eslint/parser": "^4.14.1",
-		"eslint": "^7.19.0",
-		"eslint-config-prettier": "^8.1.0",
-		"eslint-plugin-prettier": "^3.3.1",
-		"glob": "^7.1.6",
-		"mocha": "^8.2.1",
-		"npm-run-all": "^4.1.5",
-		"prettier": "^2.2.1",
-		"typescript": "^4.1.3",
-		"vscode-test": "^1.5.0"
-	}
+  "name": "markdown5",
+  "version": "0.1.0",
+  "description": "markdown5 parser",
+  "main": "index.js",
+  "scripts": {
+    "clean": "rm -r ./out",
+    "lint:prettier": "prettier src --check",
+    "lint:eslint": "eslint src",
+    "lint": "run-p lint:*",
+    "fix:prettier": "npm run lint:prettier -- --write",
+    "fix:eslint": "npm run lint:eslint -- --fix",
+    "fix": "run-s fix:*",
+    "build": "tsc",
+    "run": "node out/index.js",
+    "test": "mocha --require ts-node/register --watch-extensions ts \"src/test/**/*.ts\"",
+    "dev": "run-s fix build test run",
+    "watch": "./node_modules/nodemon/bin/nodemon.js -e ts  --exec \"npm run dev\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/chai": "^4.2.15",
+    "@types/glob": "^7.1.3",
+    "@types/mocha": "^8.2.1",
+    "@types/node": "^14.14.35",
+    "@typescript-eslint/eslint-plugin": "^4.18.0",
+    "@typescript-eslint/parser": "^4.18.0",
+    "chai": "^4.3.4",
+    "eslint": "^7.22.0",
+    "eslint-plugin-prettier": "^3.3.1",
+    "glob": "^7.1.6",
+    "mocha": "^8.3.2",
+    "nodemon": "^2.0.7",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.2.1",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.3"
+  }
 }

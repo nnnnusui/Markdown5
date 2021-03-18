@@ -1,38 +1,97 @@
-import * as path from "path";
-import * as Mocha from "mocha";
-import * as glob from "glob";
+import { expect } from "chai";
+import {
+  any,
+  chain,
+  convert,
+  not,
+  or,
+  repeat,
+  same,
+} from "../../parser/Combinators";
 
-export function run(): Promise<void> {
-  // Create the mocha test
-  const mocha = new Mocha({
-    ui: "tdd",
-    color: true,
-  });
+describe("Parser Test Suite", () => {
+  it("any test", () => {
+    const a = any<string>();
 
-  const testsRoot = path.resolve(__dirname, "..");
-
-  return new Promise((c, e) => {
-    glob("**/**.test.js", { cwd: testsRoot }, (err, files) => {
-      if (err) {
-        return e(err);
-      }
-
-      // Add files to the test suite
-      files.forEach((f) => mocha.addFile(path.resolve(testsRoot, f)));
-
-      try {
-        // Run the mocha test
-        mocha.run((failures) => {
-          if (failures > 0) {
-            e(new Error(`${failures} tests failed.`));
-          } else {
-            c();
-          }
-        });
-      } catch (err) {
-        console.error(err);
-        e(err);
-      }
+    expect(a("a".split(""))).to.deep.equal({
+      ok: true,
+      head: "a",
+      tails: [],
+    });
+    expect(a("bc".split(""))).to.deep.equal({
+      ok: true,
+      head: "b",
+      tails: ["c"],
     });
   });
-}
+  it("same test", () => {
+    const a = same("a");
+    expect(a("ab".split(""))).to.deep.equal({
+      ok: true,
+      head: "a",
+      tails: ["b"],
+    });
+    expect(a("bb".split(""))).to.deep.equal({
+      ok: false,
+      head: "b",
+      tails: ["b"],
+    });
+  });
+
+  it("not test", () => {
+    const a = not(any<string>());
+    expect(a("a".split("")).ok).to.equal(false);
+    expect(a("b".split("")).ok).to.equal(false);
+  });
+  it("repeat test", () => {
+    const a = repeat(same("a"));
+    expect(a("aaaaxx".split(""))).to.deep.equal({
+      ok: true,
+      head: ["a", "a", "a", "a"],
+      tails: ["x", "x"],
+    });
+    expect(a("xax".split(""))).to.deep.equal({
+      ok: true,
+      head: [],
+      tails: ["x", "a", "x"],
+    });
+  });
+  it("convert test", () => {
+    const a = convert(same(1), (it) => `${it}`);
+    expect(a([1, 2])).to.deep.equal({
+      ok: true,
+      head: "1",
+      tails: [2],
+    });
+  });
+
+  it("chain test", () => {
+    const a = chain(same("a"), same("b"));
+    expect(a("aba".split(""))).to.deep.equal({
+      ok: true,
+      head: ["a", "b"],
+      tails: ["a"],
+    });
+    expect(a("aaba".split(""))).to.deep.equal({
+      ok: false,
+      head: ["a"],
+      tails: ["a", "b", "a"],
+    });
+    const x = convert(same("x"), (it) => ({ v: it }));
+    const c = chain(a, x);
+    expect(c("abxc".split(""))).to.deep.equal({
+      ok: true,
+      head: [["a", "b"], { v: "x" }],
+      tails: ["c"],
+    });
+  });
+  it("or test", () => {
+    const x = convert(same("x"), (it) => ({ v: it }));
+    const a = repeat(or(same("a"), x));
+    expect(a("axab".split(""))).to.deep.equal({
+      ok: true,
+      head: ["a", { v: "x" }, "a"],
+      tails: ["b"],
+    });
+  });
+});
