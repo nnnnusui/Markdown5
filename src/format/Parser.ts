@@ -8,6 +8,7 @@ import repeat from "../parser/combinator/repeat";
 import same from "../parser/combinator/minimum/same";
 import { Parser } from "../parser/Types";
 import { Content, Indent, Line, Section, Token, TokenKind } from "./Types";
+import option from "../parser/combinator/option";
 
 type Char = string & { length: 1 };
 declare global {
@@ -27,8 +28,7 @@ const t = Token;
 type Src = Char;
 const to = <T, Src>(parser: Parser<T, Src>): Parser<Src[], Src> => {
   const content = repeat(chainR(not(parser), any<Src>()));
-  const hasTail = convert(chain(content, parser), ([content]) => content);
-  return or(hasTail, content);
+  return convert(chain(content, option(parser)), ([content]) => content);
 };
 const sames = (it: string) => {
   const sames = it
