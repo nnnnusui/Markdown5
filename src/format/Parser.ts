@@ -9,7 +9,7 @@ import {
   chainR,
 } from "../parser/Combinators";
 import { Parser } from "../parser/Types";
-import { Content, Indent, Section, Token, TokenKind } from "./Types";
+import { Content, Indent, Line, Section, Token, TokenKind } from "./Types";
 
 type Char = string & { length: 1 };
 declare global {
@@ -41,9 +41,12 @@ const sames = (it: string) => {
 type Src = Char;
 const eol = sames("\n");
 const indentChar = or(sames(" "), sames("\t"));
-const indent = convert(repeat(indentChar), (it) => t.indent(it.join("")));
-const line = convert(to(eol), (it) => t.line(it.join("")));
-const section = (src: Src[]) => {
+
+const indent: Parser<Indent, Src> = convert(repeat(indentChar), (it) =>
+  t.indent(it.join(""))
+);
+const line: Parser<Line, Src> = convert(to(eol), (it) => t.line(it.join("")));
+const section: Parser<Section, Src> = (src: Src[]) => {
   const { ok, head: blockIndent, tails } = indent(src);
   const header = (() => {
     const syntax = chain(sames("# "), to(eol));
