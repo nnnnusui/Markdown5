@@ -40,17 +40,24 @@ const sames = (it: string) => {
 
 const eol = sames("\n");
 const indentChar = or(sames(" "), sames("\t"));
+const emptyLine = chainL(repeat(indentChar), eol);
 const line = convert(to(eol), (it) => it.join(""));
 const sectionHeaderPrefix = sames("# ");
+
+const lineTrim = <T, Src>(parser: Parser<T, Src>) =>
+  chainR(repeat(emptyLine), parser);
 
 const indent: Parser<Indent, Src> = convert(repeat(indentChar), (it) =>
   t.indent(it.join(""))
 );
 const paragraph = (blockIndent: Indent): Parser<Paragraph, Src> => {
-  const nots = not(chain(indent, sectionHeaderPrefix));
+  const paragraphIndent = chainR(indentChar, not(indentChar));
+  const startOtherBlock = chain(indent, sectionHeaderPrefix);
+  const nots = not(or(paragraphIndent, startOtherBlock));
   const oneLine = chainR(nots, line);
+  const head = chainR(option(paragraphIndent), oneLine);
   const tails = repeat(chainR(sames(blockIndent[1]), oneLine));
-  const syntax = chain(oneLine, tails);
+  const syntax = chain(head, tails);
   return convert(syntax, ([head, tails]) =>
     t.paragraph([head, ...tails].join(""))
   );
@@ -73,6 +80,6 @@ const content = (indent: Indent): Parser<Content, Src> => {
   return convert(syntax, ([, content]) => content);
 };
 const contents = (indent: Indent = [TokenKind.indent, ""]) =>
-  repeat(content(indent));
+  repeat(lineTrim(content(indent)));
 
 export const parse = (src: string) => contents()(src.chars());

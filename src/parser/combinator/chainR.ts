@@ -13,6 +13,6 @@ const chainR = <T extends Parsers<any>>(
 ): Parser<Tail<TupledParsersResult<typeof parsers>>, ParsersSrc<T>> =>
   convert(
     chain(...parsers),
-    (it) => it.reverse()[0] as Tail<TupledParsersResult<typeof parsers>>
+    (it) => it.reverse()[0] as Tail<TupledParsersResult<typeof parsers>> // power
   );
 export default chainR;
