@@ -11,3 +11,9 @@ export type UnifiedParsersResult<T extends Parsers<any>> = ParseResult<
 export type TupledParsersResult<P extends Parsers<any>> = {
   [Key in keyof P]: ParseResult<P[Key]>;
 };
+export type Tail<T extends readonly any[]> = T extends [
+  ...(readonly any[]),
+  infer Tail
+]
+  ? Tail
+  : never;

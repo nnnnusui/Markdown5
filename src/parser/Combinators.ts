@@ -4,6 +4,7 @@ import {
   TupledParsersResult,
   ParsersSrc,
   UnifiedParsersResult,
+  Tail,
 } from "./Types";
 
 export const any = <Src>(): Parser<Src, Src> => <Src>(src: Src[]) => {
@@ -54,6 +55,7 @@ export const chain = <T extends Parsers<any>>(
     src: ParsersSrc<T>[],
     results: UnifiedParsersResult<typeof parsers>[]
   ): any => {
+    // power
     if (parsers.length <= index) return { ok: true, head: results, tails: src };
     const result = parsers[index](src);
     if (!result.ok) return { ok: false, head: results, tails: src };
@@ -62,6 +64,18 @@ export const chain = <T extends Parsers<any>>(
   };
   return recursion(0, src, []);
 };
+export const chainR = <T extends Parsers<any>>(
+  ...parsers: T
+): Parser<Tail<TupledParsersResult<typeof parsers>>, ParsersSrc<T>> =>
+  convert(
+    chain(...parsers),
+    (it) => it.reverse()[0] as Tail<TupledParsersResult<typeof parsers>>
+  );
+export const chainL = <T extends Parsers<any>>(
+  ...parsers: T
+): Parser<TupledParsersResult<typeof parsers>, ParsersSrc<T>> =>
+  convert(chain(...parsers), (it) => it[0]);
+
 export const or = <T extends Parsers<any>>(
   ...parsers: T
 ): Parser<UnifiedParsersResult<typeof parsers>, ParsersSrc<T>> => (
