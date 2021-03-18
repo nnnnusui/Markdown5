@@ -53,7 +53,7 @@ const indent: Parser<Indent, Src> = convert(repeat(indentChar), (it) =>
 const paragraph = (blockIndent: Indent): Parser<Paragraph, Src> => {
   const paragraphIndent = chainR(indentChar, not(indentChar));
   const startOtherBlock = chain(indent, sectionHeaderPrefix);
-  const nots = not(or(paragraphIndent, startOtherBlock));
+  const nots = not(or(paragraphIndent, startOtherBlock, emptyLine));
   const oneLine = chainR(nots, line);
   const head = chainR(option(paragraphIndent), oneLine);
   const tails = repeat(chainR(sames(blockIndent[1]), oneLine));
