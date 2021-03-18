@@ -1,4 +1,12 @@
-import { convert, repeat, not, chain, same, or } from "../parser/Combinators";
+import {
+  convert,
+  repeat,
+  not,
+  chain,
+  same,
+  or,
+  any,
+} from "../parser/Combinators";
 import { Parser } from "../parser/Types";
 import { Content, Indent, Section, Token, TokenKind } from "./Types";
 
@@ -18,7 +26,8 @@ String.prototype[`chars`] = function () {
 
 const t = Token;
 const to = <T, Src>(parser: Parser<T, Src>): Parser<Src[], Src> => {
-  const content = repeat(not(parser));
+  const notParser = convert(chain(not(parser), any<Src>()), ([, any]) => any);
+  const content = repeat(notParser);
   const hasTail = convert(chain(content, parser), ([content]) => content);
   return or(hasTail, content);
 };

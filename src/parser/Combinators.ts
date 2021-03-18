@@ -15,11 +15,11 @@ export const same = <Src>(it: Src): Parser<Src, Src> => (src: Src[]) => {
   return { ok: it === head, head, tails };
 };
 
-export const not = <T, Src>(parser: Parser<T, Src>): Parser<Src, Src> => (
+export const not = <T, Src>(parser: Parser<T, Src>): Parser<T, Src> => (
   src: Src[]
 ) => {
-  const { ok } = parser(src);
-  return { ...any<Src>()(src), ok: !ok };
+  const { ok, ...results } = parser(src);
+  return { ok: !ok, ...results };
 };
 export const repeat = <T, Src>(source: Parser<T, Src>): Parser<T[], Src> => (
   src: Src[]
