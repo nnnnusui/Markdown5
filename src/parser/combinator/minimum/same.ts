@@ -1,4 +1,4 @@
-import { Parser } from "../Types";
+import { Parser } from "../../Types";
 import any from "./any";
 
 const same = <Src>(it: Src): Parser<Src, Src> => (src: Src[]) => {

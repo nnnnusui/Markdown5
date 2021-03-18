@@ -1,11 +1,11 @@
-import any from "../parser/combinator/any";
+import any from "../parser/combinator/minimum/any";
 import chain from "../parser/combinator/chain";
 import chainR from "../parser/combinator/chainR";
 import convert from "../parser/combinator/convert";
 import not from "../parser/combinator/not";
 import or from "../parser/combinator/or";
 import repeat from "../parser/combinator/repeat";
-import same from "../parser/combinator/same";
+import same from "../parser/combinator/minimum/same";
 import { Parser } from "../parser/Types";
 import { Content, Indent, Line, Section, Token, TokenKind } from "./Types";
 
