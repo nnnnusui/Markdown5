@@ -4,19 +4,30 @@ export const enum TokenKind {
   sectionHeader,
   section,
 }
-export type Indent = readonly [TokenKind.indent, string];
-export type Paragraph = readonly [TokenKind.paragraph, string];
-export type SectionHeader = readonly [TokenKind.sectionHeader, string];
-export type Section = readonly [
-  TokenKind.section,
-  { header: SectionHeader; contents: Content[] }
-];
+export type Indent = { kind: TokenKind.indent; value: string };
+export type Paragraph = { kind: TokenKind.paragraph; value: string };
+export type SectionHeader = { kind: TokenKind.sectionHeader; value: string };
+export type Section = {
+  kind: TokenKind.section;
+  value: { header: SectionHeader; contents: Content[] };
+};
 export type Content = Section | Paragraph;
 
 export const Token = {
-  indent: (v: string) => [TokenKind.indent, v] as const,
-  paragraph: (v: string) => [TokenKind.paragraph, v] as const,
-  sectionHeader: (v: string) => [TokenKind.sectionHeader, v] as const,
-  section: (header: SectionHeader, contents: Content[]) =>
-    [TokenKind.section, { header, contents }] as const,
+  indent: (v: string): Indent => ({
+    kind: TokenKind.indent,
+    value: v,
+  }),
+  paragraph: (v: string): Paragraph => ({
+    kind: TokenKind.paragraph,
+    value: v,
+  }),
+  sectionHeader: (v: string): SectionHeader => ({
+    kind: TokenKind.sectionHeader,
+    value: v,
+  }),
+  section: (header: SectionHeader, contents: Content[]): Section => ({
+    kind: TokenKind.section,
+    value: { header, contents },
+  }),
 };

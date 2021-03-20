@@ -17,18 +17,18 @@ p4content
 `;
   expect(parse(text)).to.deep.equal({
     ok: true,
-    head: [
-      TokenKind.section,
-      {
-        header: [TokenKind.sectionHeader, "Section1"],
+    head: {
+      kind: TokenKind.section,
+      value: {
+        header: { kind: TokenKind.sectionHeader, value: "Section1" },
         contents: [
-          [TokenKind.paragraph, "p1p1content"],
-          [TokenKind.paragraph, "p2  p2content"],
-          [TokenKind.paragraph, "p3"],
-          [TokenKind.paragraph, "p4p4content"],
+          { kind: TokenKind.paragraph, value: "p1p1content" },
+          { kind: TokenKind.paragraph, value: "p2  p2content" },
+          { kind: TokenKind.paragraph, value: "p3" },
+          { kind: TokenKind.paragraph, value: "p4p4content" },
         ],
       },
-    ],
+    },
     tails: [],
   });
 });

@@ -54,7 +54,7 @@ const paragraph = (blockIndent: Indent): Parser<Paragraph, Src> => {
   const nots = not(or(paragraphIndent, startOtherBlock, emptyLine));
   const oneLine = chainR(nots, line);
   const head = chainR(option(paragraphIndent), oneLine);
-  const tails = repeat(chainR(sames(blockIndent[1]), oneLine));
+  const tails = repeat(chainR(sames(blockIndent.value), oneLine));
   const syntax = chain(head, tails);
   return convert(syntax, ([head, tails]) =>
     t.paragraph([head, ...tails].join(""))
@@ -65,7 +65,7 @@ const section = (() => {
     src: Src[]
   ) => {
     const { ok, head: blockIndent, tails } = indent(src);
-    if (allowIndent && blockIndent[1] === "") return { ok: false } as any;
+    if (allowIndent && blockIndent.value === "") return { ok: false } as any;
     const header = (() => {
       const syntax = chain(sectionHeaderPrefix, line);
       return convert(syntax, ([, line]) => t.sectionHeader(line));
@@ -74,7 +74,7 @@ const section = (() => {
       header,
       option(
         chainR(
-          not(chain(sames(blockIndent[1]), sectionHeaderPrefix)),
+          not(chain(sames(blockIndent.value), sectionHeaderPrefix)),
           contents(blockIndent)
         )
       )
@@ -91,7 +91,10 @@ const section = (() => {
 })();
 
 const content = (indent: Indent): Parser<Content, Src> => {
-  const syntax = chain(sames(indent[1]), or(section.nested, paragraph(indent)));
+  const syntax = chain(
+    sames(indent.value),
+    or(section.nested, paragraph(indent))
+  );
   return convert(syntax, ([, content]) => content);
 };
 const contents = (indent: Indent) =>
@@ -101,8 +104,11 @@ const syntax = repeat(chainR(emptyLines, section.top));
 const conversion = convert(
   syntax,
   ([head, ...tails]): Section => {
-    const [kind, info] = head;
-    return [kind, { ...info, contents: [...info.contents, ...tails] }];
+    const { kind, value } = head;
+    return {
+      kind,
+      value: { ...value, contents: [...value.contents, ...tails] },
+    };
   }
 );
 export const parse = (src: string) => conversion(src.chars());

@@ -17,65 +17,83 @@ it("section test", () => {
 `;
   expect(parse(text)).to.deep.equal({
     ok: true,
-    head: [
-      TokenKind.section,
-      {
-        header: [TokenKind.sectionHeader, "Title"],
+    head: {
+      kind: TokenKind.section,
+      value: {
+        header: { kind: TokenKind.sectionHeader, value: "Title" },
         contents: [
-          [
-            TokenKind.section,
-            {
-              header: [TokenKind.sectionHeader, "1"],
+          {
+            kind: TokenKind.section,
+            value: {
+              header: { kind: TokenKind.sectionHeader, value: "1" },
               contents: [
-                [
-                  TokenKind.section,
-                  { header: [TokenKind.sectionHeader, "1-1"], contents: [] },
-                ],
+                {
+                  kind: TokenKind.section,
+                  value: {
+                    header: { kind: TokenKind.sectionHeader, value: "1-1" },
+                    contents: [],
+                  },
+                },
               ],
             },
-          ],
-          [
-            TokenKind.section,
-            { header: [TokenKind.sectionHeader, "2"], contents: [] },
-          ],
-          [
-            TokenKind.section,
-            {
-              header: [TokenKind.sectionHeader, "3"],
+          },
+          {
+            kind: TokenKind.section,
+            value: {
+              header: { kind: TokenKind.sectionHeader, value: "2" },
+              contents: [],
+            },
+          },
+          {
+            kind: TokenKind.section,
+            value: {
+              header: { kind: TokenKind.sectionHeader, value: "3" },
               contents: [
-                [
-                  TokenKind.section,
-                  { header: [TokenKind.sectionHeader, "3-1"], contents: [] },
-                ],
-                [
-                  TokenKind.section,
-                  {
-                    header: [TokenKind.sectionHeader, "3-2"],
+                {
+                  kind: TokenKind.section,
+                  value: {
+                    header: { kind: TokenKind.sectionHeader, value: "3-1" },
+                    contents: [],
+                  },
+                },
+                {
+                  kind: TokenKind.section,
+                  value: {
+                    header: { kind: TokenKind.sectionHeader, value: "3-2" },
                     contents: [
-                      [
-                        TokenKind.section,
-                        {
-                          header: [TokenKind.sectionHeader, "3-2-1"],
+                      {
+                        kind: TokenKind.section,
+                        value: {
+                          header: {
+                            kind: TokenKind.sectionHeader,
+                            value: "3-2-1",
+                          },
                           contents: [],
                         },
-                      ],
+                      },
                     ],
                   },
-                ],
-                [
-                  TokenKind.section,
-                  { header: [TokenKind.sectionHeader, "3-3"], contents: [] },
-                ],
+                },
+                {
+                  kind: TokenKind.section,
+                  value: {
+                    header: { kind: TokenKind.sectionHeader, value: "3-3" },
+                    contents: [],
+                  },
+                },
               ],
             },
-          ],
-          [
-            TokenKind.section,
-            { header: [TokenKind.sectionHeader, "4"], contents: [[1, ""]] },
-          ],
+          },
+          {
+            kind: TokenKind.section,
+            value: {
+              header: { kind: TokenKind.sectionHeader, value: "4" },
+              contents: [{ kind: TokenKind.paragraph, value: "" }],
+            },
+          },
         ],
       },
-    ],
+    },
     tails: [],
   });
 });
