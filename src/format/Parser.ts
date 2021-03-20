@@ -7,7 +7,7 @@ import or from "../parser/combinator/or";
 import repeat from "../parser/combinator/repeat";
 import same from "../parser/combinator/minimum/same";
 import { Parser } from "../parser/Types";
-import { Content, Indent, Paragraph, Section, Token, TokenKind } from "./Types";
+import { Content, Indent, Paragraph, Section, Token } from "./Types";
 import option from "../parser/combinator/option";
 import chainL from "../parser/combinator/chainL";
 
@@ -41,11 +41,9 @@ const sames = (it: string) => {
 const eol = sames("\n");
 const indentChar = or(sames(" "), sames("\t"));
 const emptyLine = chainL(repeat(indentChar), eol);
+const emptyLines = repeat(emptyLine);
 const line = convert(to(eol), (it) => it.join(""));
 const sectionHeaderPrefix = sames("# ");
-
-const lineTrim = <T, Src>(parser: Parser<T, Src>) =>
-  chainR(repeat(emptyLine), parser);
 
 const indent: Parser<Indent, Src> = convert(repeat(indentChar), (it) =>
   t.indent(it.join(""))
@@ -62,24 +60,49 @@ const paragraph = (blockIndent: Indent): Parser<Paragraph, Src> => {
     t.paragraph([head, ...tails].join(""))
   );
 };
-const section: Parser<Section, Src> = (src: Src[]) => {
-  const { ok, head: blockIndent, tails } = indent(src);
-  const header = (() => {
-    const syntax = chain(sectionHeaderPrefix, line);
-    return convert(syntax, ([, line]) => t.sectionHeader(line));
-  })();
-  const syntax = chain(header, contents(blockIndent));
-  const result = convert(syntax, ([header, contents]) =>
-    t.section(header, contents)
-  )(tails);
-  return { ...result, ok: result.ok && ok };
-};
+const section = (() => {
+  const section = (allowIndent: boolean): Parser<Section, Src> => (
+    src: Src[]
+  ) => {
+    const { ok, head: blockIndent, tails } = indent(src);
+    if (allowIndent && blockIndent[1] === "") return { ok: false } as any;
+    const header = (() => {
+      const syntax = chain(sectionHeaderPrefix, line);
+      return convert(syntax, ([, line]) => t.sectionHeader(line));
+    })();
+    const syntax = chain(
+      header,
+      option(
+        chainR(
+          not(chain(sames(blockIndent[1]), sectionHeaderPrefix)),
+          contents(blockIndent)
+        )
+      )
+    );
+    const result = convert(syntax, ([header, contents]) =>
+      t.section(header, contents ? contents : [])
+    )(tails);
+    return { ...result, ok: result.ok && ok };
+  };
+  return {
+    top: section(false),
+    nested: section(true),
+  };
+})();
 
 const content = (indent: Indent): Parser<Content, Src> => {
-  const syntax = chain(sames(indent[1]), or(section, paragraph(indent)));
+  const syntax = chain(sames(indent[1]), or(section.nested, paragraph(indent)));
   return convert(syntax, ([, content]) => content);
 };
-const contents = (indent: Indent = [TokenKind.indent, ""]) =>
-  repeat(lineTrim(content(indent)));
+const contents = (indent: Indent) =>
+  repeat(chainR(emptyLines, content(indent)));
 
-export const parse = (src: string) => contents()(src.chars());
+const syntax = repeat(chainR(emptyLines, section.top));
+const conversion = convert(
+  syntax,
+  ([head, ...tails]): Section => {
+    const [kind, info] = head;
+    return [kind, { ...info, contents: [...info.contents, ...tails] }];
+  }
+);
+export const parse = (src: string) => conversion(src.chars());

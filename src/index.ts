@@ -1,17 +1,15 @@
 import { parse } from "./format/Parser";
 
 const result = parse(`
-# Header1
-  indent
-content1
-
-  # Header2
-  paragraph2-1
-
-  paragraph2-2
-   paragraph2-3
-  , 2-3...
-
-content1-2
+# Title
+# 1
+  # 1-1
+# 2
+# 3
+  # 3-1
+  # 3-2
+    # 3-2-1
+  # 3-3
+# 4
 `);
 console.dir(result, { depth: null });
