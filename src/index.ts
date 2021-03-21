@@ -1,4 +1,5 @@
 import { parse } from "./format/Parser";
+import { transpile } from "./format/Transpiler";
 
 const text = `
 # Markdown5
@@ -16,5 +17,5 @@ const text = `
    third paragarph sample
   text.
 `;
-const result = parse(text);
+const result = transpile([parse(text).head]);
 console.dir(result, { depth: null });

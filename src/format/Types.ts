@@ -13,6 +13,8 @@ export type Section = {
 };
 export type Content = Section | Paragraph;
 
+export type Token = Indent | Paragraph | SectionHeader | Section;
+
 export const Token = {
   indent: (v: string): Indent => ({
     kind: TokenKind.indent,
