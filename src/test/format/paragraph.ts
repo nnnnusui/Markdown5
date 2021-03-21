@@ -18,9 +18,9 @@ p4content
   expect(parse(text)).to.deep.equal({
     ok: true,
     head: {
-      kind: TokenKind.section,
+      kind: TokenKind.markdown5,
       value: {
-        header: { kind: TokenKind.sectionHeader, value: "Section1" },
+        title: { kind: TokenKind.sectionHeader, value: "Section1" },
         contents: [
           { kind: TokenKind.paragraph, value: "p1p1content" },
           { kind: TokenKind.paragraph, value: "p2  p2content" },

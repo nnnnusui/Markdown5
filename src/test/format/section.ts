@@ -18,9 +18,9 @@ it("section test", () => {
   expect(parse(text)).to.deep.equal({
     ok: true,
     head: {
-      kind: TokenKind.section,
+      kind: TokenKind.markdown5,
       value: {
-        header: { kind: TokenKind.sectionHeader, value: "Title" },
+        title: { kind: TokenKind.sectionHeader, value: "Title" },
         contents: [
           {
             kind: TokenKind.section,

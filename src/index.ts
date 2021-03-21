@@ -17,5 +17,5 @@ const text = `
    third paragarph sample
   text.
 `;
-const result = transpile([parse(text).head]);
+const result = transpile(parse(text).head);
 console.dir(result, { depth: null });

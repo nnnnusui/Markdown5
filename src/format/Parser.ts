@@ -7,7 +7,7 @@ import or from "../parser/combinator/or";
 import repeat from "../parser/combinator/repeat";
 import same from "../parser/combinator/minimum/same";
 import { Parser } from "../parser/Types";
-import { Content, Indent, Paragraph, Section, Token } from "./Types";
+import { Content, Indent, Markdown5, Paragraph, Section, Token } from "./Types";
 import option from "../parser/combinator/option";
 import chainL from "../parser/combinator/chainL";
 
@@ -103,12 +103,11 @@ const contents = (indent: Indent) =>
 const syntax = repeat(chainR(emptyLines, section.top));
 const conversion = convert(
   syntax,
-  ([head, ...tails]): Section => {
-    const { kind, value } = head;
-    return {
-      kind,
-      value: { ...value, contents: [...value.contents, ...tails] },
-    };
-  }
+  ([
+    {
+      value: { header, contents },
+    },
+    ...tails
+  ]): Markdown5 => t.markdown5(header, [...contents, ...tails])
 );
 export const parse = (src: string) => conversion(src.chars());
