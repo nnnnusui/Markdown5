@@ -1,6 +1,10 @@
+export type Source<T> = {
+  values: T[];
+  offset: number;
+};
 export type Parser<Result, Src> = (
-  src: Src[]
-) => { ok: boolean; head: Result; tails: Src[] };
+  src: Source<Src>
+) => { ok: boolean; head: Result; tails: Source<Src> };
 export type ParseResult<P> = P extends Parser<infer T, any> ? T : never;
 
 export type Parsers<Src> = Parser<any, Src>[];

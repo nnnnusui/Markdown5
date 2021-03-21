@@ -2,7 +2,7 @@ import { expect } from "chai";
 import any from "../../../../parser/combinator/minimum/any";
 
 it("any test", () => {
-  const a = any<string>();
+  const a = <T>(src: T[]) => any<T>()({ values: src, offset: 0 });
 
   expect(a("a".split(""))).to.deep.equal({
     ok: true,

@@ -1,7 +1,10 @@
 import { Parser } from "../../Types";
 
-const any = <Src>(): Parser<Src, Src> => <Src>(src: Src[]) => {
-  const [head, ...tails] = src;
-  return { ok: true, head, tails };
+const any = <Src>(): Parser<Src, Src> => (src) => {
+  const {
+    values: [head, ...tails],
+    offset,
+  } = src;
+  return { ok: true, head, tails: { values: tails, offset: offset + 1 } };
 };
 export default any;

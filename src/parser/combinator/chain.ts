@@ -4,16 +4,15 @@ import {
   TupledParsersResult,
   ParsersSrc,
   UnifiedParsersResult,
+  Source,
 } from "../Types";
 
 const chain = <T extends Parsers<any>>(
   ...parsers: T
-): Parser<TupledParsersResult<typeof parsers>, ParsersSrc<T>> => (
-  src: ParsersSrc<T>[]
-) => {
+): Parser<TupledParsersResult<typeof parsers>, ParsersSrc<T>> => (src) => {
   const recursion = (
     index: number,
-    src: ParsersSrc<T>[],
+    src: Source<ParsersSrc<T>>,
     results: UnifiedParsersResult<typeof parsers>[]
   ): any => {
     // power

@@ -61,9 +61,7 @@ const paragraph = (blockIndent: Indent): Parser<Paragraph, Src> => {
   );
 };
 const section = (() => {
-  const section = (allowIndent: boolean): Parser<Section, Src> => (
-    src: Src[]
-  ) => {
+  const section = (allowIndent: boolean): Parser<Section, Src> => (src) => {
     const { ok, head: blockIndent, tails } = indent(src);
     if (allowIndent && blockIndent.value === "") return { ok: false } as any;
     const header = (() => {
@@ -110,4 +108,5 @@ const conversion = convert(
     ...tails
   ]): Markdown5 => t.markdown5(header, [...contents, ...tails])
 );
-export const parse = (src: string) => conversion(src.chars());
+export const parse = (src: string) =>
+  conversion({ values: src.chars(), offset: 0 });

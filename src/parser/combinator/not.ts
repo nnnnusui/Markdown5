@@ -1,8 +1,6 @@
 import { Parser } from "../Types";
 
-const not = <T, Src>(parser: Parser<T, Src>): Parser<null, Src> => (
-  src: Src[]
-) => {
+const not = <T, Src>(parser: Parser<T, Src>): Parser<null, Src> => (src) => {
   const { ok } = parser(src);
   return { ok: !ok, head: null, tails: src };
 };

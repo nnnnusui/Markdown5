@@ -1,7 +1,7 @@
 import { Parser } from "../Types";
 
 const option = <T, Src>(parser: Parser<T, Src>): Parser<T | null, Src> => (
-  src: Src[]
+  src
 ) => {
   const result = parser(src);
   if (result.ok) return result;

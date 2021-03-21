@@ -2,9 +2,7 @@ import { Parsers, Parser, UnifiedParsersResult, ParsersSrc } from "../Types";
 
 const or = <T extends Parsers<any>>(
   ...parsers: T
-): Parser<UnifiedParsersResult<typeof parsers>, ParsersSrc<T>> => (
-  src: ParsersSrc<T>[]
-) => {
+): Parser<UnifiedParsersResult<typeof parsers>, ParsersSrc<T>> => (src) => {
   const recursion = (index: number): any => {
     // power
     if (parsers.length <= index) return { ok: false, head: [], tails: src };
