@@ -1,21 +1,21 @@
-import { TokenKind, Token, Markdown5 } from "./Types";
+import { TokenValue, Markdown5 } from "./Types";
 
-const converts = (tokens: Token[]): string => {
+const converts = (tokens: TokenValue[]): string => {
   const [head, ...tails] = tokens;
   return convert(head) + (tails.length <= 0 ? "" : converts(tails));
 };
-const convert = (token: Token): string => {
+const convert = (token: TokenValue): string => {
   switch (token.kind) {
-    case TokenKind.markdown5:
+    case "markdown5":
       return converts([token.value.title, ...token.value.contents]);
-    case TokenKind.section:
+    case "section":
       return `<section>${converts([
         token.value.header,
         ...token.value.contents,
       ])}</section>`;
-    case TokenKind.sectionHeader:
+    case "sectionHeader":
       return `<h1>${token.value}</h1>`;
-    case TokenKind.paragraph:
+    case "paragraph":
       return `<p>${token.value}</p>`;
     default:
       return "";
