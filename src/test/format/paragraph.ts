@@ -1,6 +1,5 @@
 import { expect } from "chai";
 import { parse } from "../../format/Parser";
-import { TokenKind } from "../../format/Types";
 
 it("paragraph test", () => {
   const text = `
@@ -18,17 +17,18 @@ p4content
   expect(parse(text)).to.deep.equal({
     ok: true,
     head: {
-      kind: TokenKind.markdown5,
+      kind: "markdown5",
       value: {
-        title: { kind: TokenKind.sectionHeader, value: "Section1" },
+        title: { kind: "sectionHeader", value: "Section1", offset: 1 },
         contents: [
-          { kind: TokenKind.paragraph, value: "p1p1content" },
-          { kind: TokenKind.paragraph, value: "p2  p2content" },
-          { kind: TokenKind.paragraph, value: "p3" },
-          { kind: TokenKind.paragraph, value: "p4p4content" },
+          { kind: "paragraph", value: "p1p1content", offset: 12 },
+          { kind: "paragraph", value: "p2  p2content", offset: 26 },
+          { kind: "paragraph", value: "p3", offset: 42 },
+          { kind: "paragraph", value: "p4p4content", offset: 45 },
         ],
       },
+      offset: 0,
     },
-    tails: [],
+    tails: { values: [], offset: 59 },
   });
 });

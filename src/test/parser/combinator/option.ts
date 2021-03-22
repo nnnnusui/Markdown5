@@ -1,17 +1,10 @@
 import { expect } from "chai";
 import same from "../../../parser/combinator/minimum/same";
 import option from "../../../parser/combinator/option";
+import { init } from "../../../parser/combinator/util/init";
 
-it("opton test", () => {
+it("option test", () => {
   const a = option(same("a"));
-  expect(a("abb".split(""))).to.deep.equal({
-    ok: true,
-    head: "a",
-    tails: ["b", "b"],
-  });
-  expect(a("bb".split(""))).to.deep.equal({
-    ok: true,
-    head: null,
-    tails: ["b", "b"],
-  });
+  expect(init(a)("abb".split("")).head).to.deep.equal("a");
+  expect(init(a)("bb".split("")).head).to.deep.equal(null);
 });

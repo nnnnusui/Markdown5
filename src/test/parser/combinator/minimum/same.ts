@@ -1,16 +1,23 @@
 import { expect } from "chai";
 import same from "../../../../parser/combinator/minimum/same";
+import { init } from "../../../../parser/combinator/util/init";
 
 it("same test", () => {
   const a = same("a");
-  expect(a("ab".split(""))).to.deep.equal({
+  expect(init(a)("ab".split(""))).to.deep.equal({
     ok: true,
     head: "a",
-    tails: ["b"],
+    tails: {
+      offset: 1,
+      values: ["b"],
+    },
   });
-  expect(a("bb".split(""))).to.deep.equal({
+  expect(init(a)("bb".split(""))).to.deep.equal({
     ok: false,
     head: "b",
-    tails: ["b"],
+    tails: {
+      offset: 1,
+      values: ["b"],
+    },
   });
 });

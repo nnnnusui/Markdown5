@@ -1,6 +1,5 @@
 import { expect } from "chai";
 import { parse } from "../../format/Parser";
-import { TokenKind } from "../../format/Types";
 
 it("section test", () => {
   const text = `
@@ -18,82 +17,93 @@ it("section test", () => {
   expect(parse(text)).to.deep.equal({
     ok: true,
     head: {
-      kind: TokenKind.markdown5,
+      kind: "markdown5",
       value: {
-        title: { kind: TokenKind.sectionHeader, value: "Title" },
+        title: { kind: "sectionHeader", value: "Title", offset: 1 },
         contents: [
           {
-            kind: TokenKind.section,
+            kind: "section",
             value: {
-              header: { kind: TokenKind.sectionHeader, value: "1" },
+              header: { kind: "sectionHeader", value: "1", offset: 9 },
               contents: [
                 {
-                  kind: TokenKind.section,
+                  kind: "section",
                   value: {
-                    header: { kind: TokenKind.sectionHeader, value: "1-1" },
+                    header: { kind: "sectionHeader", value: "1-1", offset: 15 },
                     contents: [],
                   },
+                  offset: 15,
                 },
               ],
             },
+            offset: 9,
           },
           {
-            kind: TokenKind.section,
+            kind: "section",
             value: {
-              header: { kind: TokenKind.sectionHeader, value: "2" },
+              header: { kind: "sectionHeader", value: "2", offset: 21 },
               contents: [],
             },
+            offset: 21,
           },
           {
-            kind: TokenKind.section,
+            kind: "section",
             value: {
-              header: { kind: TokenKind.sectionHeader, value: "3" },
+              header: { kind: "sectionHeader", value: "3", offset: 25 },
               contents: [
                 {
-                  kind: TokenKind.section,
+                  kind: "section",
                   value: {
-                    header: { kind: TokenKind.sectionHeader, value: "3-1" },
+                    header: { kind: "sectionHeader", value: "3-1", offset: 31 },
                     contents: [],
                   },
+                  offset: 31,
                 },
                 {
-                  kind: TokenKind.section,
+                  kind: "section",
                   value: {
-                    header: { kind: TokenKind.sectionHeader, value: "3-2" },
+                    header: { kind: "sectionHeader", value: "3-2", offset: 39 },
                     contents: [
                       {
-                        kind: TokenKind.section,
+                        kind: "section",
                         value: {
                           header: {
-                            kind: TokenKind.sectionHeader,
+                            kind: "sectionHeader",
                             value: "3-2-1",
+                            offset: 49,
                           },
                           contents: [],
                         },
+                        offset: 49,
                       },
                     ],
                   },
+                  offset: 39,
                 },
                 {
-                  kind: TokenKind.section,
+                  kind: "section",
                   value: {
-                    header: { kind: TokenKind.sectionHeader, value: "3-3" },
+                    header: { kind: "sectionHeader", value: "3-3", offset: 59 },
                     contents: [],
                   },
+                  offset: 59,
                 },
               ],
             },
+            offset: 25,
           },
           {
-            kind: TokenKind.section,
+            kind: "section",
             value: {
-              header: { kind: TokenKind.sectionHeader, value: "4" },
-              contents: [{ kind: TokenKind.paragraph, value: "" }],
+              header: { kind: "sectionHeader", value: "4", offset: 65 },
+              contents: [{ kind: "paragraph", value: "", offset: 69 }],
             },
+            offset: 65,
           },
         ],
       },
+      offset: 0,
     },
-    tails: [],
+    tails: { values: [], offset: 71 },
   });
 });
