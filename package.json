@@ -4,7 +4,7 @@
   "description": "markdown5 parser",
   "main": "index.js",
   "scripts": {
-    "clean": "rm -r ./out",
+    "clean": "rm -r ./dist",
     "lint:prettier": "prettier src --check",
     "lint:eslint": "eslint src",
     "lint": "run-p lint:*",
@@ -12,7 +12,7 @@
     "fix:eslint": "npm run lint:eslint -- --fix",
     "fix": "run-s fix:*",
     "build": "tsc",
-    "run": "node out/index.js",
+    "run": "node dist/index.js",
     "test": "mocha --require ts-node/register --watch-extensions ts \"src/test/**/*.ts\"",
     "dev": "run-s fix build test run",
     "watch": "nodemon -e ts --exec \"npm run dev\""
