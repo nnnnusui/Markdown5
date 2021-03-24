@@ -2,7 +2,8 @@
   "name": "markdown5",
   "version": "0.1.0",
   "description": "markdown5 parser",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "clean": "rm -r ./dist",
     "lint:prettier": "prettier src --check",
