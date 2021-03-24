@@ -1,23 +1,14 @@
-export { parse } from "./format/Parser";
-export { transpile } from "./format/Transpiler";
+/* eslint-disable @typescript-eslint/naming-convention */
+import { parse } from "./format/Parser";
+import { transpile } from "./format/Transpiler";
 
-// const text = `
-// # Markdown5
-// # paragraph
-//   # empty line separating
-//   sample paragraph
-
-//   double line
-//   paragraph
-
-//   # paragraph-indent separating
-//    first paragra-
-//   ph. sample text.
-//    second paragraph
-//    third paragarph sample
-//   text.
-// `;
-// const parsed = parse(text);
-// console.dir(parsed, { depth: null });
-// const transpiled = transpile(parsed.head);
-// console.dir(transpiled, { depth: null });
+const Markdown5 = {
+  parse: (source: string) => {
+    const { ok, head, tails } = parse(source);
+    const result = ok ? [head] : [];
+    return result;
+  },
+  transpile: transpile,
+};
+export default Markdown5;
+export type { Token } from "./format/Types";
