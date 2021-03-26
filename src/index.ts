@@ -11,4 +11,4 @@ const Markdown5 = {
   transpile: transpile,
 };
 export default Markdown5;
-export type { Token } from "./format/Types";
+export * from "./format/Types";
