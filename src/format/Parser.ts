@@ -10,7 +10,7 @@ import { Parser } from "../parser/Types";
 import option from "../parser/combinator/option";
 import chainL from "../parser/combinator/chainL";
 import { tokenize } from "./combinator/tokenize";
-import { Indent, Token, Content } from "./Types";
+import { Token, Content } from "./Types";
 import { init } from "../parser/combinator/util/init";
 
 type Char = string & { length: 1 };
@@ -46,17 +46,14 @@ const emptyLines = repeat(emptyLine);
 const line = convert(to(eol), (it) => it.join(""));
 const sectionHeaderPrefix = sames("# ");
 
-const indent = tokenize(repeat(indentChar), (it) => ({
-  kind: "indent",
-  value: it.join(""),
-}));
-const paragraph = (blockIndent: Indent) => {
+const indent = convert(repeat(indentChar), (it) => it.join(""));
+const paragraph = (blockIndent: string) => {
   const paragraphIndent = chainR(indentChar, not(indentChar));
   const startOtherBlock = chain(indent, sectionHeaderPrefix);
   const nots = not(or(paragraphIndent, startOtherBlock, emptyLine));
   const oneLine = chainR(nots, line);
   const head = chainR(option(paragraphIndent), oneLine);
-  const tails = repeat(chainR(sames(blockIndent.value), oneLine));
+  const tails = repeat(chainR(sames(blockIndent), oneLine));
   const syntax = chain(head, tails);
   return tokenize(syntax, ([head, tails]) => ({
     kind: "paragraph",
@@ -68,7 +65,7 @@ const section = (() => {
     src
   ) => {
     const { ok, head: blockIndent, tails } = indent(src);
-    if (allowIndent && blockIndent.value === "") return { ok: false } as any;
+    if (allowIndent && blockIndent === "") return { ok: false } as any;
     const header = (() => {
       const syntax = chain(sectionHeaderPrefix, line);
       return tokenize(syntax, ([, line]) => ({
@@ -80,7 +77,7 @@ const section = (() => {
       header,
       option(
         chainR(
-          not(chain(sames(blockIndent.value), sectionHeaderPrefix)),
+          not(chain(sames(blockIndent), sectionHeaderPrefix)),
           contents(blockIndent)
         )
       )
@@ -97,22 +94,20 @@ const section = (() => {
   } as const;
 })();
 
-const content = (indent: Indent): Parser<Content, Src> => {
-  const syntax = chain(
-    sames(indent.value),
-    or(section.nested, paragraph(indent))
-  );
+const content = (indent: string): Parser<Content, Src> => {
+  const syntax = chain(sames(indent), or(section.nested, paragraph(indent)));
   return convert(syntax, ([, content]) => content);
 };
-const contents = (indent: Indent) =>
+const contents = (indent: string) =>
   repeat(chainR(emptyLines, content(indent)));
 
 const syntax = repeat(chainR(emptyLines, section.top));
 const conversion = tokenize(syntax, ([head, ...tails]) => {
   const { header, contents } = head.value;
+  const title = { ...header, kind: "title" as const };
   return {
     kind: "markdown5",
-    value: { title: header, contents: [...contents, ...tails] },
+    value: { title, contents: [...contents, ...tails] },
   };
 });
 export const parse = (
