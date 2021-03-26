@@ -12,11 +12,11 @@
     "fix:prettier": "npm run lint:prettier -- --write",
     "fix:eslint": "npm run lint:eslint -- --fix",
     "fix": "run-s fix:*",
-    "build": "tsc",
+		"compile": "tsc -p ./",
     "run": "node dist/index.js",
     "test": "mocha --require ts-node/register --watch-extensions ts \"src/test/**/*.ts\"",
-    "dev": "run-s fix build test run",
-    "demon": "nodemon -e ts --exec \"npm run dev\""
+    "dev": "run-s fix compile test run",
+    "demon": "nodemon -e ts --ignore \"dist/*\" --exec \"npm run dev\""
   },
   "keywords": [],
   "author": "",
