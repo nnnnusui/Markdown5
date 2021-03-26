@@ -18,7 +18,7 @@ class SymbolProvider implements vscode.DocumentSymbolProvider {
   public provideDocumentSymbols(
     document: vscode.TextDocument,
     token: vscode.CancellationToken
-  ): Thenable<vscode.SymbolInformation[]> {
+  ): Thenable<vscode.DocumentSymbol[]> {
     return new Promise((resolve, reject) =>
       resolve(
         Markdown5.parse(document.getText()).flatMap((it) =>
@@ -28,54 +28,42 @@ class SymbolProvider implements vscode.DocumentSymbolProvider {
     );
   }
   private symbolFromToken<T extends TokenKind>(
-    token: Token<T>,
-    document: vscode.TextDocument,
-    parent = ""
-  ) {
-    const position = document.positionAt(token.offset);
-    return this.searchSymbol(
-      token,
-      new vscode.Location(document.uri, position),
-      document,
-      parent
-    );
-  }
-  private searchSymbol(
-    token: TokenValue,
-    location: vscode.Location,
-    document: vscode.TextDocument,
-    parent: string
-  ): vscode.SymbolInformation[] {
+    _token: Token<T>,
+    document: vscode.TextDocument
+  ): vscode.DocumentSymbol[] {
+    const token: TokenValue = _token;
+    const offset = _token.offset;
+    const position = document.positionAt(offset);
+    const location = new vscode.Location(document.uri, position);
     switch (token.kind) {
-      default:
-        return [];
       case "markdown5": {
         const { title, contents } = token.value;
         return [
-          ...this.symbolFromToken(title, document, parent),
-          ...contents.flatMap((it) =>
-            this.symbolFromToken(it, document, title.value)
-          ),
+          ...this.symbolFromToken(title, document),
+          ...contents.flatMap((it) => this.symbolFromToken(it, document)),
         ];
       }
       case "section": {
         const { header, contents } = token.value;
-        return [
-          ...this.symbolFromToken(header, document, parent),
-          ...contents.flatMap((it) =>
-            this.symbolFromToken(it, document, header.value)
-          ),
-        ];
+        return this.symbolFromToken(header, document).map((it) => {
+          it.children = contents.flatMap((it) =>
+            this.symbolFromToken(it, document)
+          );
+          return it;
+        });
       }
       case "sectionHeader":
         return [
-          {
-            containerName: parent,
-            name: token.value,
-            kind: vscode.SymbolKind.Key,
-            location,
-          },
+          new vscode.DocumentSymbol(
+            token.value,
+            "test",
+            vscode.SymbolKind.Key,
+            location.range,
+            location.range
+          ),
         ];
+      default:
+        return [];
     }
   }
 }
