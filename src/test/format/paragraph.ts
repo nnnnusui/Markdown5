@@ -19,7 +19,7 @@ p4content
     head: {
       kind: "markdown5",
       value: {
-        title: { kind: "sectionHeader", value: "Section1", offset: 1 },
+        title: { kind: "title", value: "Section1", offset: 1 },
         contents: [
           { kind: "paragraph", value: "p1p1content", offset: 12 },
           { kind: "paragraph", value: "p2  p2content", offset: 26 },

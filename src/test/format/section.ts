@@ -19,7 +19,7 @@ it("section test", () => {
     head: {
       kind: "markdown5",
       value: {
-        title: { kind: "sectionHeader", value: "Title", offset: 1 },
+        title: { kind: "title", value: "Title", offset: 1 },
         contents: [
           {
             kind: "section",
