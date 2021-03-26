@@ -16,7 +16,7 @@
     "run": "node dist/index.js",
     "test": "mocha --require ts-node/register --watch-extensions ts \"src/test/**/*.ts\"",
     "dev": "run-s fix build test run",
-    "watch": "nodemon -e ts --exec \"npm run dev\""
+    "demon": "nodemon -e ts --exec \"npm run dev\""
   },
   "keywords": [],
   "author": "",
