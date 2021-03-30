@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { CompileCommand } from "./CompileCommand";
+import { CompileOnDidSaveTextDocument } from "./CompileCommand";
 import { SemanticProvider } from "./SemanticProvider";
 import { SymbolProvider } from "./SymbolProvider";
 
@@ -9,8 +9,7 @@ export function activate(context: vscode.ExtensionContext): void {
   SymbolProvider.activate(context, selector);
   SemanticProvider.activate(context, selector);
 
-  CompileCommand.activate(context, id);
-  vscode.workspace.onDidSaveTextDocument((textDocument) => {});
+  CompileOnDidSaveTextDocument.activate(context);
 }
 
 export function deactivate(): void {}
