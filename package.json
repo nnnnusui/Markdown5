@@ -27,6 +27,9 @@
 		"semanticTokenTypes": [{
 			"id": "header",
 			"description": "section header"
+		}, {
+			"id": "title",
+			"description": "document title"
 		}],
 		"themes": [
 			{

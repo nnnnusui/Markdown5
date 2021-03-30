@@ -3,7 +3,7 @@ import Markdown5 from "markdown5";
 import { Token, TokenKind, TokenValue } from "markdown5/dist/format/Types";
 
 type SemanticToken = Parameters<vscode.SemanticTokensBuilder["push"]>;
-const types: string[] = ["header"];
+const types: string[] = ["title", "header"];
 const modifires: string[] = [];
 const legend = new vscode.SemanticTokensLegend(types, modifires);
 export class SemanticProvider implements vscode.DocumentSemanticTokensProvider {
@@ -62,6 +62,13 @@ export class SemanticProvider implements vscode.DocumentSemanticTokensProvider {
           [
             new vscode.Range(position, document.positionAt(offset + 1)),
             "header",
+          ],
+        ];
+      case "title":
+        return [
+          [
+            new vscode.Range(position, document.positionAt(offset + 1)),
+            "title",
           ],
         ];
       default:

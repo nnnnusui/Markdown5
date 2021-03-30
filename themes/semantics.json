@@ -2,6 +2,7 @@
     "$schema": "vscode://schemas/color-theme",
     "semanticHighlighting": true,
     "semanticTokenColors": {
+        "title:markdown5": "#00aeff",
         "header:markdown5": "#ffbb00"
     }
 }
