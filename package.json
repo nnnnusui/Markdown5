@@ -38,6 +38,12 @@
 				"path": "./themes/semantics.json"
 			}
 		],
+		"commands": [
+			{
+				"command": "markdown5.compile",
+				"title": "Markdown5: Compile"
+			}
+		],
 		"viewsContainers": {
 			"activitybar": [
 				{

@@ -61,14 +61,14 @@ export class SemanticProvider implements vscode.DocumentSemanticTokensProvider {
         return [
           [
             new vscode.Range(position, document.positionAt(offset + 1)),
-            "sectionHeader",
+            token.kind,
           ],
         ];
       case "title":
         return [
           [
             new vscode.Range(position, document.positionAt(offset + 1)),
-            "title",
+            token.kind,
           ],
         ];
       default:
