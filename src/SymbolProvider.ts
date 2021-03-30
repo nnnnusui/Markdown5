@@ -3,6 +3,17 @@ import Markdown5 from "markdown5";
 import { Token, TokenKind, TokenValue } from "markdown5/dist/format/Types";
 
 export class SymbolProvider implements vscode.DocumentSymbolProvider {
+  static activate = (
+    context: vscode.ExtensionContext,
+    selector: vscode.DocumentSelector
+  ): void => {
+    const symbol = vscode.languages.registerDocumentSymbolProvider(
+      selector,
+      new SymbolProvider()
+    );
+    context.subscriptions.push(symbol);
+  };
+
   public provideDocumentSymbols(
     document: vscode.TextDocument,
     token: vscode.CancellationToken

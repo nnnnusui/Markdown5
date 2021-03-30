@@ -24,11 +24,15 @@
 				]
 			}
 		],
-		"grammars": [
+		"semanticTokenTypes": [{
+			"id": "header",
+			"description": "section header"
+		}],
+		"themes": [
 			{
-				"language": "markdown5",
-				"scopeName": "source.markdown5",
-				"path": "./syntaxes/markdown5.tmLanguage.json"
+				"label": "Markdown5 semantics",
+				"uiTheme": "vs-dark",
+				"path": "./themes/semantics.json"
 			}
 		],
 		"viewsContainers": {

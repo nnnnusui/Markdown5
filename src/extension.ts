@@ -1,14 +1,12 @@
 import * as vscode from "vscode";
+import { SemanticProvider } from "./SemanticProvider";
 import { SymbolProvider } from "./SymbolProvider";
 
 const id = "markdown5";
-export function activate(context: vscode.ExtensionContext) {
-  const symbol = vscode.languages.registerDocumentSymbolProvider(
-    [{ language: id }],
-    new SymbolProvider()
-  );
-
-  context.subscriptions.push(symbol);
+const selector: vscode.DocumentSelector = { language: id };
+export function activate(context: vscode.ExtensionContext): void {
+  SymbolProvider.activate(context, selector);
+  SemanticProvider.activate(context, selector);
 }
 
-export function deactivate() {}
+export function deactivate(): void {}
