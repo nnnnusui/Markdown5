@@ -18,6 +18,18 @@ export default Markdown5;
 export * from "./format/Types";
 
 const Template = {
+  from: (path: string) => {
+    const template = readFileSync(path + "m5template.html", {
+      encoding: "utf8",
+    });
+    return {
+      applied: (m5: Token<"markdown5">) => {
+        const head = Template.getHead(m5);
+        const body = Template.getBody(m5);
+        return template.replace("{head}", head).replace("{body}", body);
+      },
+    };
+  },
   getHead: (m5: Token<"markdown5">) => {
     const title = m5.value.title.value;
     const firstContent = m5.value.contents[0];
@@ -30,28 +42,21 @@ const Template = {
     `;
     return result;
   },
+  getBody: (m5: Token<"markdown5">) => Markdown5.transpile(m5),
 };
 
 const cli = cac();
 cli.command("compile <path>", "transpile to html").action((path: string) => {
   stat(path, (err, stats) => {
     if (stats.isDirectory()) {
-      const template = readFileSync(path + "m5template.html", {
-        encoding: "utf8",
-      });
+      const template = Template.from(path);
       const pathPattern = path + "**/*.m5";
       glob(pathPattern, (err, paths) => {
-        const transpiledResults = paths.flatMap((path) => {
+        const results = paths.flatMap((path) => {
           const text = readFileSync(path, { encoding: "utf8" });
-          return Markdown5.parse(text).map((it) => ({
-            body: Markdown5.transpile(it),
-            head: Template.getHead(it),
-          }));
+          return Markdown5.parse(text).map((it) => template.applied(it));
         });
-        const templateApplyed = transpiledResults.map(({ head, body }) =>
-          template.replace("{head}", head).replace("{body}", body)
-        );
-        console.log(templateApplyed);
+        console.log(results);
       });
     }
   });
