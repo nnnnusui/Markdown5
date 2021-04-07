@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import cac from "cac";
 import { glob } from "glob";
-import { readFileSync, stat } from "fs";
+import { existsSync, mkdirSync, readFileSync, stat } from "fs";
+import { writeFile } from "fs/promises";
+import { dirname } from "path";
 import { parse } from "./format/Parser";
 import { transpile } from "./format/Transpiler";
 import { Token } from "./format/Types";
@@ -50,36 +52,47 @@ const Template = {
 };
 
 const cli = cac();
-cli.command("compile <path>", "transpile to html").action((path: string) => {
-  stat(path, (err, stats) => {
+cli.command("compile <path>", "transpile to html").action((root: string) => {
+  stat(root, (err, stats) => {
     if (stats.isDirectory()) {
-      const template = Template.from(path);
-      const pathPattern = path + "**/*.m5";
+      const out = root + "out/";
+      const template = Template.from(root);
+      const pathPattern = root + "**/*.m5";
       glob(pathPattern, (err, paths) => {
         const parseResults = paths.flatMap((path) => {
           const text = readFileSync(path, { encoding: "utf8" });
-          return Markdown5.parse(text).map((parsed) => ({ src: path, parsed }));
-        });
-        const htmls = parseResults.map(({ parsed }) =>
-          template.generateHtmlFromM5Token(parsed)
-        );
-        const list = parseResults.map(({ src, parsed }) => {
-          const relative = src.replace(path, "");
+          const relative = path.replace(root, "");
           const [, ...tails] = relative.split(".").reverse();
           const relativePathWithoutExtension = tails.reverse().join("");
-          const title = parsed.value.title.value;
-          return `<li><a href="${relativePathWithoutExtension}.html">${title}</a></li>`;
+          return Markdown5.parse(text).map((parsed) => ({
+            src: relativePathWithoutExtension,
+            parsed,
+          }));
         });
-        console.log(htmls);
-        console.log(
-          template.generateList(
-            `
-              <h1>Articles</h1>
-              <ul>${list.join("")}</ul>
-            `,
-            "Articles",
-            "めも書き一覧"
-          )
+
+        parseResults.map(({ src, parsed }) => {
+          const output = `${out}${src}.html`;
+          const parent = dirname(output);
+          if (!existsSync(parent)) mkdirSync(parent, { recursive: true });
+          writeFile(
+            `${out}${src}.html`,
+            template.generateHtmlFromM5Token(parsed)
+          );
+        });
+
+        const list = parseResults.map(({ src, parsed }) => {
+          const title = parsed.value.title.value;
+          return `<li><a href="${src}.html">${title}</a></li>`;
+        });
+        const title = "Articles";
+        const description = "めも書き一覧";
+        const body = `
+          <h1>${title}</h1>
+          <ul>${list.join("")}</ul>
+        `;
+        writeFile(
+          out + "list.html",
+          template.generateList(body, title, description)
         );
       });
     }
