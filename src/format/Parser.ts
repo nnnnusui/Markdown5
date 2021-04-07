@@ -48,7 +48,7 @@ const sectionHeaderPrefix = sames("# ");
 
 const indent = convert(repeat(indentChar), (it) => it.join(""));
 const paragraph = (blockIndent: string) => {
-  const paragraphIndent = chainR(indentChar, not(indentChar));
+  const paragraphIndent = chainR(or(indentChar, sames("　")), not(indentChar));
   const startOtherBlock = chain(indent, sectionHeaderPrefix);
   const nots = not(or(paragraphIndent, startOtherBlock, emptyLine));
   const oneLine = chainR(nots, line);
