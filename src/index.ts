@@ -21,7 +21,7 @@ export * from "./format/Types";
 
 const Template = {
   from: (path: string) => {
-    const template = readFileSync(path + "m5template.html", {
+    const template = readFileSync(path, {
       encoding: "utf8",
     });
     return {
@@ -52,13 +52,19 @@ const Template = {
 };
 
 const cli = cac();
-cli.command("compile <path>", "transpile to html").action((root: string) => {
-  stat(root, (err, stats) => {
-    if (stats.isDirectory()) {
-      const out = root + "out/";
-      const template = Template.from(root);
-      const pathPattern = root + "**/*.m5";
-      glob(pathPattern, (err, paths) => {
+cli
+  .command("compile <path>", "transpile to html")
+  .option("--template <path>", "template html file path")
+  .action((path: string, options) => {
+    stat(path, (err, stats) => {
+      const root = stats.isDirectory() ? path : dirname(path);
+      const pattern = stats.isDirectory() ? `${path}**/*.m5` : path;
+      const out = stats.isDirectory() ? root + "out/" : root;
+      const templatePath = options["template"]
+        ? options["template"]
+        : root + "m5template.html";
+      const template = Template.from(templatePath);
+      glob(pattern, (err, paths) => {
         const parseResults = paths.flatMap((path) => {
           const text = readFileSync(path, { encoding: "utf8" });
           const relative = path.replace(root, "");
@@ -87,16 +93,15 @@ cli.command("compile <path>", "transpile to html").action((root: string) => {
         const title = "Articles";
         const description = "めも書き一覧";
         const body = `
-          <h1>${title}</h1>
-          <ul>${list.join("")}</ul>
-        `;
+            <h1>${title}</h1>
+            <ul>${list.join("")}</ul>
+          `;
         writeFile(
           out + "list.html",
           template.generateList(body, title, description)
         );
       });
-    }
+    });
   });
-});
 cli.help();
 cli.parse();
