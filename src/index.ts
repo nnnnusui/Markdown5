@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /* eslint-disable @typescript-eslint/naming-convention */
 import cac from "cac";
 import { glob } from "glob";

@@ -4,6 +4,9 @@
   "description": "markdown5 parser",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "markdown5": "dist/index.js"
+  },
   "scripts": {
     "clean": "rm -r ./dist",
     "lint:prettier": "prettier src --check",
