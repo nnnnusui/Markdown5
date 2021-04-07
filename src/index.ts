@@ -23,18 +23,22 @@ const Template = {
       encoding: "utf8",
     });
     return {
-      applied: (m5: Token<"markdown5">) => {
-        const head = Template.getHead(m5);
+      generateHtmlFromM5Token: (m5: Token<"markdown5">) => {
+        const title = m5.value.title.value;
+        const firstContent = m5.value.contents[0];
+        const description =
+          firstContent.kind === "paragraph" ? firstContent.value : "...";
+        const head = Template.getHead(title, description);
         const body = Template.getBody(m5);
+        return template.replace("{head}", head).replace("{body}", body);
+      },
+      generateList: (body: string, title: string, description: string) => {
+        const head = Template.getHead(title, description);
         return template.replace("{head}", head).replace("{body}", body);
       },
     };
   },
-  getHead: (m5: Token<"markdown5">) => {
-    const title = m5.value.title.value;
-    const firstContent = m5.value.contents[0];
-    const description =
-      firstContent.kind === "paragraph" ? firstContent.value : "...";
+  getHead: (title: string, description: string) => {
     const result = `
       <meta property="og:title" content="${title}" />
       <meta property="og:description" content="${description}" />
@@ -52,11 +56,31 @@ cli.command("compile <path>", "transpile to html").action((path: string) => {
       const template = Template.from(path);
       const pathPattern = path + "**/*.m5";
       glob(pathPattern, (err, paths) => {
-        const results = paths.flatMap((path) => {
+        const parseResults = paths.flatMap((path) => {
           const text = readFileSync(path, { encoding: "utf8" });
-          return Markdown5.parse(text).map((it) => template.applied(it));
+          return Markdown5.parse(text).map((parsed) => ({ src: path, parsed }));
         });
-        console.log(results);
+        const htmls = parseResults.map(({ parsed }) =>
+          template.generateHtmlFromM5Token(parsed)
+        );
+        const list = parseResults.map(({ src, parsed }) => {
+          const relative = src.replace(path, "");
+          const [, ...tails] = relative.split(".").reverse();
+          const relativePathWithoutExtension = tails.reverse().join("");
+          const title = parsed.value.title.value;
+          return `<li><a href="${relativePathWithoutExtension}.html">${title}</a></li>`;
+        });
+        console.log(htmls);
+        console.log(
+          template.generateList(
+            `
+              <h1>Articles</h1>
+              <ul>${list.join("")}</ul>
+            `,
+            "Articles",
+            "めも書き一覧"
+          )
+        );
       });
     }
   });
