@@ -34,7 +34,6 @@
     "chai": "^4.3.4",
     "eslint": "^7.22.0",
     "eslint-plugin-prettier": "^3.3.1",
-    "glob": "^7.1.6",
     "mocha": "^8.3.2",
     "nodemon": "^2.0.7",
     "npm-run-all": "^4.1.5",
@@ -43,6 +42,7 @@
     "typescript": "^4.2.3"
   },
   "dependencies": {
-    "cac": "^6.7.2"
+    "cac": "^6.7.2",
+    "glob": "^7.1.6"
   }
 }
