@@ -24,13 +24,16 @@
 				]
 			}
 		],
-		"semanticTokenTypes": [{
-			"id": "sectionHeader",
-			"description": "section header"
-		}, {
-			"id": "title",
-			"description": "document title"
-		}],
+		"semanticTokenTypes": [
+			{
+				"id": "sectionHeader",
+				"description": "section header"
+			},
+			{
+				"id": "title",
+				"description": "document title"
+			}
+		],
 		"themes": [
 			{
 				"label": "Markdown5 semantics",
@@ -88,7 +91,7 @@
 		"eslint-config-prettier": "^8.1.0",
 		"eslint-plugin-prettier": "^3.3.1",
 		"glob": "^7.1.6",
-		"markdown5": "file:../parser",
+		"markdown5": "^0.2.3",
 		"mocha": "^8.2.1",
 		"nodemon": "^2.0.7",
 		"npm-run-all": "^4.1.5",
