@@ -3,8 +3,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import cac from "cac";
 import { glob } from "glob";
-import { existsSync, mkdirSync, readFileSync, stat } from "fs";
-import { writeFile } from "fs/promises";
+import { existsSync, mkdirSync, readFileSync, stat, writeFile } from "fs";
 import { dirname } from "path";
 import { parse } from "./format/Parser";
 import { transpile } from "./format/Transpiler";
@@ -84,7 +83,8 @@ cli
           if (!existsSync(parent)) mkdirSync(parent, { recursive: true });
           writeFile(
             `${out}${src}.html`,
-            template.generateHtmlFromM5Token(parsed)
+            template.generateHtmlFromM5Token(parsed),
+            () => {}
           );
         });
 
@@ -100,7 +100,8 @@ cli
           `;
         writeFile(
           out + "list.html",
-          template.generateList(body, title, description)
+          template.generateList(body, title, description),
+          () => {}
         );
       });
     });
