@@ -58,7 +58,7 @@ cli
   .option("--template <path>", "template html file path")
   .action((input: string, output: string, options) => {
     stat(input, (err, stats) => {
-      const root = stats.isDirectory() ? input : dirname(input) + "/";
+      const root = (stats.isDirectory() ? input : dirname(input)) + "/";
       const pattern = stats.isDirectory() ? `${root}**/*.m5` : input;
       const out = output + "/";
       const templatePath = options["template"]
