@@ -54,13 +54,13 @@ const Template = {
 
 const cli = cac();
 cli
-  .command("compile <path>", "transpile to html")
+  .command("compile <input> <output>", "transpile to html")
   .option("--template <path>", "template html file path")
-  .action((path: string, options) => {
-    stat(path, (err, stats) => {
-      const root = stats.isDirectory() ? path : dirname(path);
-      const pattern = stats.isDirectory() ? `${path}**/*.m5` : path;
-      const out = stats.isDirectory() ? root + "out/" : root;
+  .action((input: string, output: string, options) => {
+    stat(input, (err, stats) => {
+      const root = stats.isDirectory() ? input : dirname(input) + "/";
+      const pattern = stats.isDirectory() ? `${root}**/*.m5` : input;
+      const out = output + "/";
       const templatePath = options["template"]
         ? options["template"]
         : root + "m5template.html";
