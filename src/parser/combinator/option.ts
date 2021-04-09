@@ -1,10 +1,10 @@
-import { Parser } from "../Types";
+import { Combinator, ok } from "../Types";
 
-const option = <T, Src>(parser: Parser<T, Src>): Parser<T | null, Src> => (
-  src
-) => {
-  const result = parser(src);
+const option = <T, Src>(
+  combinator: Combinator<T, Src>
+): Combinator<T | null, Src> => (src) => {
+  const result = combinator(src);
   if (result.ok) return result;
-  return { ok: true, head: null, tails: src };
+  return ok({ head: null, tail: src });
 };
 export default option;
