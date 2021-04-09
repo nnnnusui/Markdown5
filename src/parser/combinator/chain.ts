@@ -6,6 +6,7 @@ import {
   ok,
   UnifiedHead,
 } from "../Types";
+import convert from "./convert";
 
 const chain = <T extends AnyCombinators>(
   ...combinators: T
@@ -19,7 +20,7 @@ const chain = <T extends AnyCombinators>(
     if (!current.ok) return current;
     const { head, tail } = current.get;
     return ok({ head: [...result.get.head, head], tail });
-  }, first(src));
+  }, convert(first, (it) => [it])(src));
   return result as ReturnType<Combinator<TupledHead<T>, Src<T>>>; // power
 };
 export default chain;
