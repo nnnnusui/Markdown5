@@ -15,6 +15,12 @@ export type Source<T> = {
 export type Combinator<T, Src> = (
   src: Source<Src>
 ) => Result<Source<Src>, { head: T; tail: Source<Src> }>;
+export type Combinators<T> = Combinator<any, T>[];
+export type AnyCombinators = Combinators<any>;
+
+export type Src<T> = T extends Combinators<infer Src> ? Src : never;
+export type Head<T> = T extends Combinator<infer Head, any> ? Head : never;
+export type UnifiedHead<T extends AnyCombinators> = Head<T[number]>;
 
 export type Parser<Result, Src> = (
   src: Source<Src>
