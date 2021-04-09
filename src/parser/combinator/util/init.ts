@@ -1,5 +1,5 @@
-import { Parser, Source } from "../../Types";
+import { Combinator, Source } from "../../Types";
 
-export const init = <T, Src>(parser: Parser<T, Src>) => (
+export const init = <T, Src>(combinator: Combinator<T, Src>) => (
   values: Source<Src>["values"]
-) => parser({ values, offset: 0 });
+): ReturnType<Combinator<T, Src>> => combinator({ values, offset: 0 });
