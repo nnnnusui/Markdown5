@@ -1,27 +1,25 @@
 import {
-  Parsers,
-  Parser,
-  TupledParsersResult,
-  ParsersSrc,
-  UnifiedParsersResult,
-  Source,
+  AnyCombinators,
+  Combinator,
+  Src,
+  TupledHead,
+  ok,
+  UnifiedHead,
 } from "../Types";
 
-const chain = <T extends Parsers<any>>(
-  ...parsers: T
-): Parser<TupledParsersResult<typeof parsers>, ParsersSrc<T>> => (src) => {
-  const recursion = (
-    index: number,
-    src: Source<ParsersSrc<T>>,
-    results: UnifiedParsersResult<typeof parsers>[]
-  ): any => {
-    // power
-    if (parsers.length <= index) return { ok: true, head: results, tails: src };
-    const result = parsers[index](src);
-    if (!result.ok) return { ok: false, head: results, tails: src };
-    const { head, tails } = result;
-    return recursion(index + 1, tails, [...results, head]);
-  };
-  return recursion(0, src, []);
+const chain = <T extends AnyCombinators>(
+  ...combinators: T
+): Combinator<TupledHead<T>, Src<T>> => (src) => {
+  const [first, ...others] = combinators;
+  const result = others.reduce<
+    ReturnType<Combinator<UnifiedHead<T>[], Src<T>>>
+  >((result, it) => {
+    if (!result.ok) return result;
+    const current = it(src);
+    if (!current.ok) return current;
+    const { head, tail } = current.get;
+    return ok({ head: [...result.get.head, head], tail });
+  }, first(src));
+  return result as ReturnType<Combinator<TupledHead<T>, Src<T>>>; // power
 };
 export default chain;
