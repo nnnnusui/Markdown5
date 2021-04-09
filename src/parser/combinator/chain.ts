@@ -15,7 +15,7 @@ const chain = <T extends AnyCombinators>(
     ReturnType<Combinator<UnifiedHead<T>[], Src<T>>>
   >((result, it) => {
     if (!result.ok) return result;
-    const current = it(src);
+    const current = it(result.get.tail);
     if (!current.ok) return current;
     const { head, tail } = current.get;
     return ok({ head: [...result.get.head, head], tail });
