@@ -21,6 +21,9 @@ export type AnyCombinators = Combinators<any>;
 export type Src<T> = T extends Combinators<infer Src> ? Src : never;
 export type Head<T> = T extends Combinator<infer Head, any> ? Head : never;
 export type UnifiedHead<T extends AnyCombinators> = Head<T[number]>;
+export type TupledHead<T extends AnyCombinators> = {
+  [Key in keyof T]: Head<T[Key]>;
+};
 
 export type Parser<Result, Src> = (
   src: Source<Src>
