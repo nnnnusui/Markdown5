@@ -1,10 +1,10 @@
-import { Parser } from "../../Types";
+import { Combinator, ok } from "../../Types";
 
-const any = <Src>(): Parser<Src, Src> => (src) => {
+const any = <Src>(): Combinator<Src, Src> => (src) => {
   const {
     values: [head, ...tails],
     offset,
   } = src;
-  return { ok: true, head, tails: { values: tails, offset: offset + 1 } };
+  return ok({ head, tail: { values: tails, offset: offset + 1 } });
 };
 export default any;
