@@ -3,6 +3,10 @@ export const ok = <Err, Ok>(value: Ok): Result<Err, Ok> => ({
   ok: true,
   get: value,
 });
+export const err = <Err, Ok>(value: Err): Result<Err, Ok> => ({
+  ok: false,
+  get: value,
+});
 
 export type Source<T> = {
   values: T[];
