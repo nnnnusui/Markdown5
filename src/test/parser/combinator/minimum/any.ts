@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import any from "../../../../parser/combinator/minimum/any";
-import { init } from "../../../../parser/combinator/util/init";
+import init from "../../../../parser/combinator/util/init";
 import { ok } from "../../../../parser/Types";
 
 it("any test", () => {

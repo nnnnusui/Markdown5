@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import same from "../../../parser/combinator/minimum/same";
 import repeat from "../../../parser/combinator/repeat";
-import { init } from "../../../parser/combinator/util/init";
+import init from "../../../parser/combinator/util/init";
 import { ok } from "../../../parser/Types";
 
 it("repeat test", () => {

@@ -3,7 +3,7 @@ import convert from "../../../parser/combinator/convert";
 import same from "../../../parser/combinator/minimum/same";
 import or from "../../../parser/combinator/or";
 import repeat from "../../../parser/combinator/repeat";
-import { init } from "../../../parser/combinator/util/init";
+import init from "../../../parser/combinator/util/init";
 import { ok } from "../../../parser/Types";
 
 it("or test", () => {

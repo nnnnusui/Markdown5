@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import convert from "../../../parser/combinator/convert";
 import same from "../../../parser/combinator/minimum/same";
-import { init } from "../../../parser/combinator/util/init";
+import init from "../../../parser/combinator/util/init";
 import { ok } from "../../../parser/Types";
 
 it("convert test", () => {

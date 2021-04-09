@@ -2,7 +2,7 @@ import { expect } from "chai";
 import chain from "../../../parser/combinator/chain";
 import convert from "../../../parser/combinator/convert";
 import same from "../../../parser/combinator/minimum/same";
-import { init } from "../../../parser/combinator/util/init";
+import init from "../../../parser/combinator/util/init";
 import { err, ok } from "../../../parser/Types";
 
 it("chain test", () => {

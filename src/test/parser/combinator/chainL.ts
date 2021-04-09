@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import chainL from "../../../parser/combinator/chainL";
 import same from "../../../parser/combinator/minimum/same";
-import { init } from "../../../parser/combinator/util/init";
+import init from "../../../parser/combinator/util/init";
 import { ok } from "../../../parser/Types";
 
 it("chainL test", () => {
