@@ -1,11 +1,12 @@
-import { Parser } from "../Types";
+import { Combinator, ok } from "../Types";
 
 const convert = <Src, Before, After>(
-  parser: Parser<Before, Src>,
+  combinator: Combinator<Before, Src>,
   func: (before: Before, offset: number) => After
-): Parser<After, Src> => (src) => {
-  const { ok, head, tails } = parser(src);
-  if (!ok) return { ok, head, tails } as any; // power
-  return { ok, head: func(head, src.offset), tails };
+): Combinator<After, Src> => (src) => {
+  const result = combinator(src);
+  if (!result.ok) return result;
+  const { head, tail } = result.get;
+  return ok({ head: func(head, src.offset), tail });
 };
 export default convert;
