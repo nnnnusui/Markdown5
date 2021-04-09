@@ -1,16 +1,17 @@
-import { Parser } from "../Types";
+import { Combinator, ok, Source } from "../Types";
 
-const repeat = <T, Src>(source: Parser<T, Src>): Parser<T[], Src> => (src) => {
-  type Src = typeof src;
-  const recursion = (src: Src, results: T[]): [T[], Src] => {
-    const result = source(src);
-    if (!result.ok) return [results, src];
-    const { head, tails } = result;
-    const next = [...results, head];
-    if (tails.values.length <= 0) return [next, tails];
-    return recursion(tails, next);
+const repeat = <T, Src>(
+  combinator: Combinator<T, Src>
+): Combinator<T[], Src> => (src) => {
+  const recursion = (
+    src: Source<Src>,
+    result: T[] = []
+  ): ReturnType<Combinator<T[], Src>> => {
+    const current = combinator(src);
+    if (!current.ok) return ok({ head: result, tail: src });
+    const { head, tail } = current.get;
+    return recursion(tail, [...result, head]);
   };
-  const [results, tails] = recursion(src, []);
-  return { ok: true, head: results, tails };
+  return recursion(src);
 };
 export default repeat;
