@@ -1,10 +1,10 @@
-import { Parsers, Parser, TupledParsersResult, ParsersSrc } from "../Types";
+import { AnyCombinators, Src, TupledHead, Combinator } from "../Types";
 import chain from "./chain";
 import convert from "./convert";
 
-const chainL = <T extends Parsers<any>>(
-  ...parsers: T
-): Parser<TupledParsersResult<typeof parsers>[0], ParsersSrc<T>> =>
-  convert(chain(...parsers), (it) => it[0]);
+const chainL = <T extends AnyCombinators>(
+  ...combinators: T
+): Combinator<TupledHead<T>[0], Src<T>> =>
+  convert(chain(...combinators), (it) => it[0]);
 
 export default chainL;
