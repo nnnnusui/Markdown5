@@ -4,15 +4,21 @@ import convert from "../parser/combinator/convert";
 import not from "../parser/combinator/not";
 import or from "../parser/combinator/or";
 import repeat from "../parser/combinator/repeat";
-import same from "../parser/combinator/minimum/same";
 import { Combinator, err } from "../parser/Types";
 import option from "../parser/combinator/option";
-import chainL from "../parser/combinator/chainL";
 import tokenize from "./combinator/tokenize";
 import { Token, Content } from "./Types";
 import init from "../parser/combinator/util/init";
-import to from "./combinator/to";
 import sames from "./combinator/sames";
+import {
+  indentChar,
+  sectionHeaderPrefix,
+  emptyLine,
+  line,
+  emptyLines,
+  eol,
+  indent,
+} from "./combinator/util";
 
 export type Char = string & { length: 1 };
 type Parser<T> = Combinator<T, Char>;
@@ -31,14 +37,6 @@ String.prototype[`chars`] = function () {
   return this.split("") as Char[];
 };
 
-const eol = sames("\n");
-const indentChar = or(sames(" "), sames("\t"));
-const emptyLine = chainL(repeat(indentChar), eol);
-const emptyLines = repeat(emptyLine);
-const line = convert(to(eol), (it) => it.join(""));
-const sectionHeaderPrefix = sames("# ");
-
-const indent = convert(repeat(indentChar), (it) => it.join(""));
 const paragraph = (blockIndent: string) => {
   const paragraphIndent = chainR(or(indentChar, sames("　")), not(indentChar));
   const startOtherBlock = chain(indent, sectionHeaderPrefix);
@@ -101,9 +99,5 @@ const conversion = tokenize(syntax, ([head, ...tails]) => {
     value: { title, contents: [...contents, ...tails] },
   };
 });
-export const parse = (
-  src: string //: ReturnType<Parser<Token<"markdown5">>> =>
-) =>
-  init(repeat(chainR(chainL(repeat(indentChar), eol), section.top)))(
-    src.chars()
-  );
+export const parse = (src: string): ReturnType<Parser<Token<"markdown5">>> =>
+  init(conversion)(src.chars());
