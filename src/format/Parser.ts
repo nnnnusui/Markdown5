@@ -12,6 +12,7 @@ import tokenize from "./combinator/tokenize";
 import { Token, Content } from "./Types";
 import init from "../parser/combinator/util/init";
 import to from "./combinator/to";
+import sames from "./combinator/sames";
 
 export type Char = string & { length: 1 };
 type Parser<T> = Combinator<T, Char>;
@@ -28,13 +29,6 @@ String.prototype[`char`] = function () {
 };
 String.prototype[`chars`] = function () {
   return this.split("") as Char[];
-};
-
-const sames = (it: string) => {
-  const sames = it
-    .chars()
-    .reduce<Parser<Char>[]>((sum, it) => [...sum, same(it)], []);
-  return convert(chain(...sames), (it) => it.join(""));
 };
 
 const eol = sames("\n");
