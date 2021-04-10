@@ -17,23 +17,10 @@ import {
   sectionHeaderPrefix,
 } from "./combinator/util";
 import paragraph from "./combinator/paragraph";
+import Char from "./Char";
 
-export type Char = string & { length: 1 };
 type Parser<T> = Combinator<T, Char>;
 export default Parser;
-
-declare global {
-  interface String {
-    char(): Char;
-    chars(): Char[];
-  }
-}
-String.prototype[`char`] = function () {
-  return this.charAt(0) as Char;
-};
-String.prototype[`chars`] = function () {
-  return this.split("") as Char[];
-};
 
 const section = (() => {
   const section = (allowIndent: boolean): Parser<Token<"section">> => (src) => {
