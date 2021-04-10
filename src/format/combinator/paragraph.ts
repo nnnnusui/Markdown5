@@ -16,15 +16,16 @@ import {
   line,
 } from "./util";
 
+const paragraphIndent = chainR(or(indentChar, sames("　")), not(indentChar));
+const startOtherBlock = chain(indent, sectionHeaderPrefix);
+const nots = not(or(paragraphIndent, startOtherBlock, emptyLine));
+const oneLine = chainR(nots, line);
+const head = chainR(option(paragraphIndent), oneLine);
+const tails = (indent: string) => repeat(chainR(sames(indent), oneLine));
+const syntax = (indent: string) => chain(head, tails(indent));
+
 const paragraph = (blockIndent: string): Parser<Token<"paragraph">> => {
-  const paragraphIndent = chainR(or(indentChar, sames("　")), not(indentChar));
-  const startOtherBlock = chain(indent, sectionHeaderPrefix);
-  const nots = not(or(paragraphIndent, startOtherBlock, emptyLine));
-  const oneLine = chainR(nots, line);
-  const head = chainR(option(paragraphIndent), oneLine);
-  const tails = repeat(chainR(sames(blockIndent), oneLine));
-  const syntax = chain(head, tails);
-  return tokenize(syntax, ([head, tails]) => ({
+  return tokenize(syntax(blockIndent), ([head, tails]) => ({
     kind: "paragraph",
     value: [head, ...tails].join(""),
   }));
