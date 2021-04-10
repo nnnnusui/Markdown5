@@ -11,14 +11,12 @@ import { Token, Content } from "./Types";
 import init from "../parser/combinator/util/init";
 import sames from "./combinator/sames";
 import {
-  indentChar,
-  sectionHeaderPrefix,
-  emptyLine,
-  line,
   emptyLines,
-  eol,
   indent,
+  line,
+  sectionHeaderPrefix,
 } from "./combinator/util";
+import paragraph from "./combinator/paragraph";
 
 export type Char = string & { length: 1 };
 type Parser<T> = Combinator<T, Char>;
@@ -37,19 +35,6 @@ String.prototype[`chars`] = function () {
   return this.split("") as Char[];
 };
 
-const paragraph = (blockIndent: string) => {
-  const paragraphIndent = chainR(or(indentChar, sames("　")), not(indentChar));
-  const startOtherBlock = chain(indent, sectionHeaderPrefix);
-  const nots = not(or(paragraphIndent, startOtherBlock, emptyLine));
-  const oneLine = chainR(nots, line);
-  const head = chainR(option(paragraphIndent), oneLine);
-  const tails = repeat(chainR(sames(blockIndent), oneLine));
-  const syntax = chain(head, tails);
-  return tokenize(syntax, ([head, tails]) => ({
-    kind: "paragraph",
-    value: [head, ...tails].join(""),
-  }));
-};
 const section = (() => {
   const section = (allowIndent: boolean): Parser<Token<"section">> => (src) => {
     const indentResult = indent(src);
