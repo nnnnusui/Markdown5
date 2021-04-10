@@ -8,7 +8,8 @@ const repeat = <T, Src>(
     result: T[] = []
   ): ReturnType<Combinator<T[], Src>> => {
     const current = combinator(src);
-    if (!current.ok) return ok({ head: result, tail: src });
+    if (src.values.length <= 0 || !current.ok)
+      return ok({ head: result, tail: src });
     const { head, tail } = current.get;
     return recursion(tail, [...result, head]);
   };
