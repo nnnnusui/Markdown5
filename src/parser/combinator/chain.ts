@@ -6,13 +6,11 @@ import {
   ok,
   UnifiedHead,
 } from "../Types";
-import convert from "./convert";
 
 const chain = <T extends AnyCombinators>(
   ...combinators: T
 ): Combinator<TupledHead<T>, Src<T>> => (src) => {
-  const [first, ...others] = combinators;
-  const result = others.reduce<
+  const result = combinators.reduce<
     ReturnType<Combinator<UnifiedHead<T>[], Src<T>>>
   >((result, it) => {
     if (!result.ok) return result;
@@ -20,7 +18,7 @@ const chain = <T extends AnyCombinators>(
     if (!current.ok) return current;
     const { head, tail } = current.get;
     return ok({ head: [...result.get.head, head], tail });
-  }, convert(first, (it) => [it])(src));
+  }, ok({ head: [], tail: src }));
   return result as ReturnType<Combinator<TupledHead<T>, Src<T>>>; // power
 };
 export default chain;
