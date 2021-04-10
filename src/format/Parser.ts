@@ -1,4 +1,3 @@
-import any from "../parser/combinator/minimum/any";
 import chain from "../parser/combinator/chain";
 import chainR from "../parser/combinator/chainR";
 import convert from "../parser/combinator/convert";
@@ -6,14 +5,18 @@ import not from "../parser/combinator/not";
 import or from "../parser/combinator/or";
 import repeat from "../parser/combinator/repeat";
 import same from "../parser/combinator/minimum/same";
-import { Parser } from "../parser/Types";
+import { Combinator, err } from "../parser/Types";
 import option from "../parser/combinator/option";
 import chainL from "../parser/combinator/chainL";
-import { tokenize } from "./combinator/tokenize";
+import tokenize from "./combinator/tokenize";
 import { Token, Content } from "./Types";
-import { init } from "../parser/combinator/util/init";
+import init from "../parser/combinator/util/init";
+import to from "./combinator/to";
 
-type Char = string & { length: 1 };
+export type Char = string & { length: 1 };
+type Parser<T> = Combinator<T, Char>;
+export default Parser;
+
 declare global {
   interface String {
     char(): Char;
@@ -27,15 +30,10 @@ String.prototype[`chars`] = function () {
   return this.split("") as Char[];
 };
 
-type Src = Char;
-const to = <T, Src>(parser: Parser<T, Src>): Parser<Src[], Src> => {
-  const content = repeat(chainR(not(parser), any<Src>()));
-  return convert(chain(content, option(parser)), ([content]) => content);
-};
 const sames = (it: string) => {
   const sames = it
     .chars()
-    .reduce((sum, it) => [...sum, same(it)], [] as Parser<Char, Char>[]);
+    .reduce<Parser<Char>[]>((sum, it) => [...sum, same(it)], []);
   return convert(chain(...sames), (it) => it.join(""));
 };
 
@@ -61,11 +59,11 @@ const paragraph = (blockIndent: string) => {
   }));
 };
 const section = (() => {
-  const section = (allowIndent: boolean): Parser<Token<"section">, Src> => (
-    src
-  ) => {
-    const { ok, head: blockIndent, tails } = indent(src);
-    if (allowIndent && blockIndent === "") return { ok: false } as any;
+  const section = (allowIndent: boolean): Parser<Token<"section">> => (src) => {
+    const indentResult = indent(src);
+    if (!indentResult.ok) return indentResult;
+    const { head: blockIndent, tail } = indentResult.get;
+    if (allowIndent && blockIndent === "") return err(src);
     const header = (() => {
       const syntax = chain(sectionHeaderPrefix, line);
       return tokenize(syntax, ([, line]) => ({
@@ -82,11 +80,10 @@ const section = (() => {
         )
       )
     );
-    const result = tokenize(syntax, ([header, contents]) => ({
+    return tokenize(syntax, ([header, contents]) => ({
       kind: "section",
       value: { header, contents: contents ? contents : [] },
-    }))(tails);
-    return { ...result, ok: result.ok && ok };
+    }))(tail);
   };
   return {
     top: section(false),
@@ -94,7 +91,7 @@ const section = (() => {
   } as const;
 })();
 
-const content = (indent: string): Parser<Content, Src> => {
+const content = (indent: string): Parser<Content> => {
   const syntax = chain(sames(indent), or(section.nested, paragraph(indent)));
   return convert(syntax, ([, content]) => content);
 };
@@ -111,6 +108,8 @@ const conversion = tokenize(syntax, ([head, ...tails]) => {
   };
 });
 export const parse = (
-  src: string
-): ReturnType<Parser<Token<"markdown5">, Char>> =>
-  init(conversion)(src.chars());
+  src: string //: ReturnType<Parser<Token<"markdown5">>> =>
+) =>
+  init(repeat(chainR(chainL(repeat(indentChar), eol), section.top)))(
+    src.chars()
+  );
