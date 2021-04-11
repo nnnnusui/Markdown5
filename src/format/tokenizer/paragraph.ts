@@ -4,17 +4,17 @@ import not from "../../parser/combinator/not";
 import option from "../../parser/combinator/option";
 import or from "../../parser/combinator/or";
 import repeat from "../../parser/combinator/repeat";
-import Parser from "../Parser";
-import { Token } from "../Types";
-import sames from "./sames";
-import tokenize from "./tokenize";
+import sames from "../combinator/sames";
+import tokenize from "../combinator/tokenize";
 import {
   indentChar,
   indent,
   sectionHeaderPrefix,
   emptyLine,
   line,
-} from "./util";
+} from "../combinator/util";
+import Parser from "../Parser";
+import { Token } from "../Types";
 
 const paragraphIndent = chainR(or(indentChar, sames("　")), not(indentChar));
 const startOtherBlock = chain(indent, sectionHeaderPrefix);

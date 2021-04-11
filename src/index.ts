@@ -10,10 +10,10 @@ import { transpile } from "./format/Transpiler";
 import { Token } from "./format/Types";
 
 const Markdown5 = {
-  parse: (source: string) => {
-    const { ok, head, tails } = parse(source);
-    const result = ok ? [head] : [];
-    return result;
+  parse: (source: string): Token<"markdown5">[] => {
+    const result = parse(source);
+    if (!result.ok) return []; //err(result.get);
+    return [result.get.head]; //ok(result.get.head);
   },
   transpile: transpile,
 };

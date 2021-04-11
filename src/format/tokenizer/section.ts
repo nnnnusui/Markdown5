@@ -5,9 +5,9 @@ import option from "../../parser/combinator/option";
 import Parser from "../Parser";
 import { Token } from "../Types";
 import contents from "./contents";
-import sames from "./sames";
-import tokenize from "./tokenize";
-import { sectionHeaderPrefix, line } from "./util";
+import sames from "../combinator/sames";
+import tokenize from "../combinator/tokenize";
+import { sectionHeaderPrefix, line } from "../combinator/util";
 
 const header = tokenize(chainR(sectionHeaderPrefix, line), (line) => ({
   kind: "sectionHeader",

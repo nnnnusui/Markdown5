@@ -1,6 +1,6 @@
 import { expect } from "chai";
+import section from "../../../format/tokenizer/section";
 import sames from "../../../format/combinator/sames";
-import section from "../../../format/combinator/section";
 import chainR from "../../../parser/combinator/chainR";
 import init from "../../../parser/combinator/util/init";
 import { ok } from "../../../parser/Types";

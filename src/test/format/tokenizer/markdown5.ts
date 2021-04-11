@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import markdown5 from "../../../format/combinator/markdown5";
+import markdown5 from "../../../format/tokenizer/markdown5";
 import init from "../../../parser/combinator/util/init";
 import { ok } from "../../../parser/Types";
 

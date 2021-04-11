@@ -4,9 +4,9 @@ import { err } from "../../parser/Types";
 import Parser from "../Parser";
 import { Content, Token } from "../Types";
 import paragraph from "./paragraph";
-import sames from "./sames";
+import sames from "../combinator/sames";
 import section from "./section";
-import { indent } from "./util";
+import { indent } from "../combinator/util";
 
 const block: Parser<Token<"section">> = (src) => {
   const blockIndent = indent(src);

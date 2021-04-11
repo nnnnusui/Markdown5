@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import paragraph from "../../../format/combinator/paragraph";
+import paragraph from "../../../format/tokenizer/paragraph";
 import init from "../../../parser/combinator/util/init";
 import { ok } from "../../../parser/Types";
 
