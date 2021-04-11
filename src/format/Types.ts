@@ -11,10 +11,15 @@ const TokenKind = [
   "section",
   "sectionHeader",
   "paragraph",
+  "text",
+  "link",
 ] as const;
 export type TokenKind = typeof TokenKind[number];
 
-export type Paragraph = { kind: "paragraph"; value: string };
+export type Link = { kind: "link"; value: { href: string; title: string } };
+export type Text = { kind: "text"; value: string };
+export type Span = Token<"text"> | Token<"link">;
+export type Paragraph = { kind: "paragraph"; value: Span[] };
 export type SectionHeader = { kind: "sectionHeader"; value: string };
 export type Section = {
   kind: "section";
@@ -28,6 +33,8 @@ export type Markdown5 = {
 export type Content = Token<"section"> | Token<"paragraph">;
 
 export type TokenValue =
+  | Link
+  | Text
   | Paragraph
   | SectionHeader
   | Section

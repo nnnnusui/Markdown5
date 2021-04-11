@@ -43,8 +43,28 @@ describe("section test", () => {
               value: "Title",
             },
             contents: [
-              { kind: "paragraph", offset: 8, value: "p1" },
-              { kind: "paragraph", offset: 11, value: "p2" },
+              {
+                kind: "paragraph",
+                offset: 8,
+                value: [
+                  {
+                    offset: 8,
+                    kind: "text",
+                    value: "p1",
+                  },
+                ],
+              },
+              {
+                kind: "paragraph",
+                offset: 11,
+                value: [
+                  {
+                    offset: 12,
+                    kind: "text",
+                    value: "p2",
+                  },
+                ],
+              },
             ],
           },
         },

@@ -14,5 +14,6 @@ export const emptyLines = repeat(emptyLine);
 export const line = convert(to(eol), (it) => it.join(""));
 
 export const sectionHeaderPrefix = sames("# ");
+export const macroPrefix = sames("@");
 
 export const indent = convert(repeat(indentChar), (it) => it.join(""));

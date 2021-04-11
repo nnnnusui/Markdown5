@@ -7,8 +7,12 @@ import option from "../../parser/combinator/option";
 import repeat from "../../parser/combinator/repeat";
 import { Combinator } from "../../parser/Types";
 
-const to = <T, Src>(combinator: Combinator<T, Src>): Combinator<Src[], Src> => {
+const to = <T, Src>(
+  combinator: Combinator<T, Src>,
+  optional = true
+): Combinator<Src[], Src> => {
+  const tail = optional ? option(combinator) : combinator;
   const content = repeat(chainR(not(combinator), any<Src>()));
-  return convert(chain(content, option(combinator)), ([content]) => content);
+  return convert(chain(content, tail), ([content]) => content);
 };
 export default to;

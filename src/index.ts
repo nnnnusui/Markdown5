@@ -30,8 +30,11 @@ const Template = {
         const title = m5.value.title.value;
         const firstContent = m5.value.contents[0];
         const description =
-          firstContent.kind === "paragraph" ? firstContent.value : "...";
-        const head = Template.getHead(title, description);
+          firstContent.kind === "paragraph" ? firstContent.value[0] : null;
+        const head =
+          description?.kind === "text"
+            ? Template.getHead(title, description.value)
+            : "";
         const body = Template.getBody(m5);
         return template.replace("{head}", head).replace("{body}", body);
       },

@@ -10,9 +10,20 @@ describe("paragraph test", () => {
     expect(init(p)("line1\nline2".chars())).to.deep.equal(
       Result.ok({
         head: {
-          kind: "paragraph",
-          value: "line1line2",
           offset: 0,
+          kind: "paragraph",
+          value: [
+            {
+              offset: 0,
+              kind: "text",
+              value: "line1",
+            },
+            {
+              offset: 6,
+              kind: "text",
+              value: "line2",
+            },
+          ],
         },
         tail: {
           offset: 11,
@@ -25,9 +36,15 @@ describe("paragraph test", () => {
     expect(init(p)(" <- half-space".chars())).to.deep.equal(
       Result.ok({
         head: {
-          kind: "paragraph",
-          value: "<- half-space",
           offset: 0,
+          kind: "paragraph",
+          value: [
+            {
+              offset: 1,
+              kind: "text",
+              value: "<- half-space",
+            },
+          ],
         },
         tail: {
           offset: 14,
@@ -40,9 +57,15 @@ describe("paragraph test", () => {
     expect(init(p)("　<- 全角スペース".chars())).to.deep.equal(
       Result.ok({
         head: {
-          kind: "paragraph",
-          value: "<- 全角スペース",
           offset: 0,
+          kind: "paragraph",
+          value: [
+            {
+              offset: 1,
+              kind: "text",
+              value: "<- 全角スペース",
+            },
+          ],
         },
         tail: {
           offset: 10,
@@ -55,9 +78,15 @@ describe("paragraph test", () => {
     expect(init(p)("1\n\n3".chars())).to.deep.equal(
       Result.ok({
         head: {
-          kind: "paragraph",
-          value: "1",
           offset: 0,
+          kind: "paragraph",
+          value: [
+            {
+              offset: 0,
+              kind: "text",
+              value: "1",
+            },
+          ],
         },
         tail: {
           offset: 2,
@@ -70,9 +99,15 @@ describe("paragraph test", () => {
     expect(init(p)("1\n 2".chars())).to.deep.equal(
       Result.ok({
         head: {
-          kind: "paragraph",
-          value: "1",
           offset: 0,
+          kind: "paragraph",
+          value: [
+            {
+              offset: 0,
+              kind: "text",
+              value: "1",
+            },
+          ],
         },
         tail: {
           offset: 2,

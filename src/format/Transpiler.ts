@@ -17,7 +17,11 @@ const convert = (token: TokenValue): string => {
     case "sectionHeader":
       return `<h1>${token.value}</h1>`;
     case "paragraph":
-      return `<p>${token.value}</p>`;
+      return `<p>${converts(token.value)}</p>`;
+    case "text":
+      return token.value;
+    case "link":
+      return `<a href="${token.value.href}">${token.value.title}</a>`;
     default:
       return "";
   }
