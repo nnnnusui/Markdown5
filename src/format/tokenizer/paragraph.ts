@@ -1,12 +1,10 @@
 import chain from "../../parser/combinator/chain";
 import chainL from "../../parser/combinator/chainL";
 import chainR from "../../parser/combinator/chainR";
-import any from "../../parser/combinator/minimum/any";
 import not from "../../parser/combinator/not";
 import option from "../../parser/combinator/option";
 import or from "../../parser/combinator/or";
 import repeat from "../../parser/combinator/repeat";
-import Char from "../Char";
 import sames from "../combinator/sames";
 import tokenize from "../combinator/tokenize";
 import {
@@ -14,24 +12,23 @@ import {
   indent,
   sectionHeaderPrefix,
   emptyLine,
+  line,
   eol,
-  macroPrefix,
 } from "../combinator/util";
 import Parser from "../Parser";
-import { Span, Token } from "../Types";
+import { Token } from "../Types";
 import link from "./link";
 
 const paragraphIndent = chainR(or(indentChar, sames("　")), not(indentChar));
 const startOtherBlock = chain(indent, sectionHeaderPrefix);
 const nots = not(or(paragraphIndent, startOtherBlock, emptyLine));
 
-const char = chainR(not(or(eol, macroPrefix)), any<Char>());
-const text = tokenize(chainL(repeat(char), option(eol)), (it) => ({
+const text = tokenize(line, (it) => ({
   kind: "text",
-  value: it.join(""),
+  value: it,
 }));
-const span: Parser<Span> = or(text, link);
 
+const span = chainL(or(chainL(link, option(eol)), text));
 const oneLine = chainR(nots, span);
 const head = chainR(option(paragraphIndent), oneLine);
 const tails = (indent: string) => repeat(chainR(sames(indent), oneLine));

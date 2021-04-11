@@ -10,16 +10,18 @@ import sames from "../combinator/sames";
 import to from "../combinator/to";
 import tokenize from "../combinator/tokenize";
 import { macroPrefix } from "../combinator/util";
+import Parser from "../Parser";
 
-const arg = (separator: string) =>
-  convert(to(sames(separator), false), (it) => it.join(""));
-const args = convert(chain(repeat(arg(",")), arg(".")), ([heads, tail]) => [
-  ...heads,
-  tail,
-]);
+const arg = <T>(comparator: Parser<T>) =>
+  convert(to(comparator, false), (it) => it.join(""));
+const suffix = sames("|");
 
-const syntax = chainR(macroPrefix, sames("link,"), args);
-const link = tokenize(syntax, (args) => {
+const splitter = " ";
+const keyword = "link";
+
+const syntax = chainR(macroPrefix, sames(`${keyword}${splitter}`), arg(suffix));
+const link = tokenize(syntax, (_args) => {
+  const args = _args.split(splitter);
   const href = args[1] ? args[1] : args[0];
   const title = args[0];
   return { kind: "link", value: { href, title } };
