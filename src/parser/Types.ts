@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export type Result<Err, Ok> = { ok: false; get: Err } | { ok: true; get: Ok };
 export const ok = <Err, Ok>(value: Ok): Result<Err, Ok> => ({
   ok: true,
@@ -24,25 +25,3 @@ export type UnifiedHead<T extends AnyCombinators> = Head<T[number]>;
 export type TupledHead<T extends AnyCombinators> = {
   [Key in keyof T]: Head<T[Key]>;
 };
-
-export type Parser<Result, Src> = (
-  src: Source<Src>
-) => { ok: boolean; head: Result; tails: Source<Src> };
-export type ParseResult<P> = P extends Parser<infer T, any> ? T : never;
-
-export type Parsers<Src> = Parser<any, Src>[];
-export type ParsersSrc<P> = P extends Parsers<infer T> ? T : never;
-export type UnifiedParsersResult<T extends Parsers<any>> = ParseResult<
-  T[number]
->;
-export type TupledParsersResult<P extends Parsers<any>> = {
-  [Key in keyof P]: ParseResult<P[Key]>;
-};
-export type Tail<T extends readonly any[]> = T extends [
-  infer Head,
-  ...infer Tails
-]
-  ? Tails extends []
-    ? Head
-    : Tail<Tails>
-  : never;

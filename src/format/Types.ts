@@ -4,7 +4,6 @@ export type FindFromUnion<
   KeyProp extends keyof Target,
   Key extends Target[KeyProp]
 > = Extract<Target, Record<KeyProp, Key>>;
-// function toEnum<T extends {[index: string]: U}, U extends string>(x: T) { return x; }
 
 const TokenKind = [
   "title",
