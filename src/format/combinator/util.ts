@@ -11,7 +11,7 @@ export const space = sames(" ");
 export const indentChar = or(tab, space);
 export const emptyLine = chainL(repeat(indentChar), eol);
 export const emptyLines = repeat(emptyLine);
-export const line = convert(to(eol), (it) => it.join(""));
+export const line = to(eol);
 
 export const sectionHeaderPrefix = sames("# ");
 export const macroPrefix = sames("@");
