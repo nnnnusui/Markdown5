@@ -2,12 +2,12 @@ import { expect } from "chai";
 import same from "../../../parser/combinator/minimum/same";
 import repeat from "../../../parser/combinator/repeat";
 import init from "../../../parser/combinator/util/init";
-import { ok } from "../../../parser/Types";
+import Result from "../../../type/Result";
 
 it("repeat test", () => {
   const a = repeat(same("a"));
   expect(init(a)("aaaaxx".split(""))).to.deep.equal(
-    ok({
+    Result.ok({
       head: ["a", "a", "a", "a"],
       tail: {
         offset: 4,
@@ -16,7 +16,7 @@ it("repeat test", () => {
     })
   );
   expect(init(a)("xax".split(""))).to.deep.equal(
-    ok({
+    Result.ok({
       head: [],
       tail: {
         offset: 0,

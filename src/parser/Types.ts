@@ -1,13 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export type Result<Err, Ok> = { ok: false; get: Err } | { ok: true; get: Ok };
-export const ok = <Err, Ok>(value: Ok): Result<Err, Ok> => ({
-  ok: true,
-  get: value,
-});
-export const err = <Err, Ok>(value: Err): Result<Err, Ok> => ({
-  ok: false,
-  get: value,
-});
+
+import Result from "../type/Result";
 
 export type Source<T> = {
   values: T[];

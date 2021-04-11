@@ -1,12 +1,12 @@
 import { expect } from "chai";
 import same from "../../../../parser/combinator/minimum/same";
 import init from "../../../../parser/combinator/util/init";
-import { err, ok } from "../../../../parser/Types";
+import Result from "../../../../type/Result";
 
 it("same test", () => {
   const a = same("a");
   expect(init(a)("ab".split(""))).to.deep.equal(
-    ok({
+    Result.ok({
       head: "a",
       tail: {
         offset: 1,
@@ -15,7 +15,7 @@ it("same test", () => {
     })
   );
   expect(init(a)("bb".split(""))).to.deep.equal(
-    err({
+    Result.err({
       offset: 0,
       values: ["b", "b"],
     })

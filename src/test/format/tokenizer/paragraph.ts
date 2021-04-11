@@ -1,14 +1,14 @@
 import { expect } from "chai";
 import paragraph from "../../../format/tokenizer/paragraph";
 import init from "../../../parser/combinator/util/init";
-import { ok } from "../../../parser/Types";
+import Result from "../../../type/Result";
 
 describe("paragraph test", () => {
   const p = paragraph("");
 
   it("line break between the text line are ignored", () =>
     expect(init(p)("line1\nline2".chars())).to.deep.equal(
-      ok({
+      Result.ok({
         head: {
           kind: "paragraph",
           value: "line1line2",
@@ -23,7 +23,7 @@ describe("paragraph test", () => {
 
   it("half-spaces paragraph indent", () =>
     expect(init(p)(" <- half-space".chars())).to.deep.equal(
-      ok({
+      Result.ok({
         head: {
           kind: "paragraph",
           value: "<- half-space",
@@ -38,7 +38,7 @@ describe("paragraph test", () => {
 
   it("full-spaces paragraph indent", () =>
     expect(init(p)("　<- 全角スペース".chars())).to.deep.equal(
-      ok({
+      Result.ok({
         head: {
           kind: "paragraph",
           value: "<- 全角スペース",
@@ -53,7 +53,7 @@ describe("paragraph test", () => {
 
   it("ends with a blank line", () =>
     expect(init(p)("1\n\n3".chars())).to.deep.equal(
-      ok({
+      Result.ok({
         head: {
           kind: "paragraph",
           value: "1",
@@ -68,7 +68,7 @@ describe("paragraph test", () => {
 
   it("ends with a paragraph indent", () =>
     expect(init(p)("1\n 2".chars())).to.deep.equal(
-      ok({
+      Result.ok({
         head: {
           kind: "paragraph",
           value: "1",

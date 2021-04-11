@@ -1,4 +1,5 @@
-import { Combinator, ok } from "../Types";
+import Result from "../../type/Result";
+import { Combinator } from "../Types";
 
 const convert = <Src, Before, After>(
   combinator: Combinator<Before, Src>,
@@ -7,6 +8,6 @@ const convert = <Src, Before, After>(
   const result = combinator(src);
   if (!result.ok) return result;
   const { head, tail } = result.get;
-  return ok({ head: func(head, src.offset), tail });
+  return Result.ok({ head: func(head, src.offset), tail });
 };
 export default convert;

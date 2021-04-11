@@ -1,12 +1,12 @@
 import { expect } from "chai";
 import sames from "../../../format/combinator/sames";
 import init from "../../../parser/combinator/util/init";
-import { ok } from "../../../parser/Types";
+import Result from "../../../type/Result";
 
 describe("sames test", () => {
   it('sames("tes") matches "tes"', () => {
     expect(init(sames("tes"))("test".chars())).to.deep.equal(
-      ok({
+      Result.ok({
         head: "tes",
         tail: {
           offset: 3,
@@ -18,7 +18,7 @@ describe("sames test", () => {
 
   it("allow empty string", () => {
     expect(init(sames(""))("test".chars())).to.deep.equal(
-      ok({
+      Result.ok({
         head: "",
         tail: {
           offset: 0,

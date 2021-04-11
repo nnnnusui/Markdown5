@@ -1,4 +1,5 @@
-import { AnyCombinators, Combinator, err, Src, UnifiedHead } from "../Types";
+import Result from "../../type/Result";
+import { AnyCombinators, Combinator, Src, UnifiedHead } from "../Types";
 
 const or = <T extends AnyCombinators>(
   ...combinators: T
@@ -10,7 +11,7 @@ const or = <T extends AnyCombinators>(
       if (!current.ok) return result;
       return current;
     },
-    err(src)
+    Result.err(src)
   );
 };
 export default or;

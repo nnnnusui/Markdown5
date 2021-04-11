@@ -1,4 +1,5 @@
-import { Combinator, ok, Source } from "../Types";
+import Result from "../../type/Result";
+import { Combinator, Source } from "../Types";
 
 const repeat = <T, Src>(
   combinator: Combinator<T, Src>
@@ -9,7 +10,7 @@ const repeat = <T, Src>(
   ): ReturnType<Combinator<T[], Src>> => {
     const current = combinator(src);
     if (src.values.length <= 0 || !current.ok)
-      return ok({ head: result, tail: src });
+      return Result.ok({ head: result, tail: src });
     const { head, tail } = current.get;
     return recursion(tail, [...result, head]);
   };
