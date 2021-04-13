@@ -4,7 +4,7 @@ import init from "../../../parser/combinator/util/init";
 import Result from "../../../type/Result";
 
 describe("paragraph test", () => {
-  const p = paragraph("");
+  const p = paragraph;
 
   it("line break between the text line are ignored", () =>
     expect(init(p)("line1\nline2".chars())).to.deep.equal(

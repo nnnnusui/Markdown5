@@ -31,13 +31,14 @@ const text = tokenize(line, (it) => ({
 const span = chainL(or(chainL(link, option(eol)), text));
 const oneLine = chainR(nots, span);
 const head = chainR(option(paragraphIndent), oneLine);
-const tails = (indent: string) => repeat(chainR(sames(indent), oneLine));
-const syntax = (indent: string) => chain(head, tails(indent));
+const tails = repeat(oneLine);
+const syntax = chain(head, tails);
 
-const paragraph = (blockIndent: string): Parser<Token<"paragraph">> => {
-  return tokenize(syntax(blockIndent), ([head, tails]) => ({
+const paragraph: Parser<Token<"paragraph">> = tokenize(
+  syntax,
+  ([head, tails]) => ({
     kind: "paragraph",
     value: [head, ...tails.flat()],
-  }));
-};
+  })
+);
 export default paragraph;
