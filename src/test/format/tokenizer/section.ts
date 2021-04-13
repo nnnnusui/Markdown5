@@ -73,9 +73,9 @@ describe("section test", () => {
       })
     ));
 
-  it("contains inner section", () =>
+  it("contains inner sections", () =>
     expect(
-      init(s)("# section1\n  # section2\n # section3".chars())
+      init(s)("# section1\n  # section2\n\n # section3".chars())
     ).to.deep.equal(
       Result.ok({
         head: {
@@ -102,11 +102,11 @@ describe("section test", () => {
               },
               {
                 kind: "section",
-                offset: 25,
+                offset: 26,
                 value: {
                   header: {
                     kind: "sectionHeader",
-                    offset: 25,
+                    offset: 26,
                     value: "section3",
                   },
                   contents: [],
@@ -116,7 +116,7 @@ describe("section test", () => {
           },
         },
         tail: {
-          offset: 35,
+          offset: 36,
           values: [],
         },
       })
