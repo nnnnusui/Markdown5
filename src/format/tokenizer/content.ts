@@ -1,22 +1,28 @@
 import chainR from "../../parser/combinator/chainR";
 import or from "../../parser/combinator/or";
 import Parser from "../Parser";
-import { Content, Token } from "../Types";
-import paragraph from "./paragraph";
+import chain from "../../parser/combinator/chain";
+import convert from "../../parser/combinator/convert";
+import repeat from "../../parser/combinator/repeat";
+import Char from "../Char";
+import higher from "../../parser/combinator/higher";
 import sames from "../combinator/sames";
+import { line, indent } from "../combinator/util";
+import { Content } from "../Types";
+import paragraph from "./paragraph";
+import lazy from "../../parser/combinator/lazy";
+import use from "../../parser/combinator/use";
 import section from "./section";
-import { indent } from "../combinator/util";
-import Result from "../../type/Result";
 
-const block: Parser<Token<"section">> = (src) => {
-  const blockIndent = indent(src);
-  if (!blockIndent.ok) return blockIndent;
-  const { head, tail } = blockIndent.get;
-  if (head === "") return Result.err(src);
-  return section(head)(tail);
-};
+const indentBlock = (indent: string): Parser<Char[]> =>
+  convert(chain(line, repeat(chainR(sames(indent), line))), ([head, tails]) =>
+    [head, ...tails].join("\n").chars()
+  );
+
+const indented = <T>(parser: Parser<T>): Parser<T> =>
+  use(indent, (it) => (it === "" ? null : higher(indentBlock(it), parser)));
 
 const content = (indent: string): Parser<Content> =>
-  chainR(sames(indent), or(block, paragraph(indent)));
+  or(indented(section("")), paragraph(""));
 
 export default content;

@@ -8,6 +8,7 @@ import contents from "./contents";
 import sames from "../combinator/sames";
 import tokenize from "../combinator/tokenize";
 import { sectionHeaderPrefix, line } from "../combinator/util";
+import lazy from "../../parser/combinator/lazy";
 
 const header = tokenize(chainR(sectionHeaderPrefix, line), (line) => ({
   kind: "sectionHeader",
@@ -17,7 +18,10 @@ const syntax = (indent: string) =>
   chain(
     header,
     option(
-      chainR(not(chain(sames(indent), sectionHeaderPrefix)), contents(indent))
+      chainR(
+        not(chain(sames(indent), sectionHeaderPrefix)),
+        lazy(() => contents(indent))
+      )
     )
   );
 
