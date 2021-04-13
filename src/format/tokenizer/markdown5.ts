@@ -4,7 +4,7 @@ import section from "./section";
 import tokenize from "../combinator/tokenize";
 import { emptyLines } from "../combinator/util";
 
-const syntax = repeat(chainR(emptyLines, section("")));
+const syntax = repeat(chainR(emptyLines, section));
 
 const markdown5 = tokenize(syntax, ([head, ...tails]) => {
   const { header, contents } = head.value;

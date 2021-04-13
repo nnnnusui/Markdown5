@@ -1,12 +1,10 @@
 import { expect } from "chai";
 import section from "../../../format/tokenizer/section";
-import sames from "../../../format/combinator/sames";
-import chainR from "../../../parser/combinator/chainR";
 import init from "../../../parser/combinator/util/init";
 import Result from "../../../type/Result";
 
 describe("section test", () => {
-  const s = section("");
+  const s = section;
 
   it("header only", () =>
     expect(init(s)("# Header".chars())).to.deep.equal(
@@ -74,31 +72,6 @@ describe("section test", () => {
         },
       })
     ));
-
-  it("indented inner section", () => {
-    const indent = "  ";
-    const syntax = chainR(sames(indent), section(indent));
-    expect(init(syntax)(`${indent}# indented`.chars())).to.deep.equal(
-      Result.ok({
-        head: {
-          kind: "section",
-          offset: 2,
-          value: {
-            header: {
-              kind: "sectionHeader",
-              offset: 2,
-              value: "indented",
-            },
-            contents: [],
-          },
-        },
-        tail: {
-          offset: 12,
-          values: [],
-        },
-      })
-    );
-  });
 
   it("contains inner section", () =>
     expect(init(s)("# section1\n  # section2".chars())).to.deep.equal(

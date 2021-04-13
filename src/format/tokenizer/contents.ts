@@ -5,6 +5,5 @@ import { Content } from "../Types";
 import content from "./content";
 import { emptyLines } from "../combinator/util";
 
-const contents = (indent: string): Parser<Content[]> =>
-  repeat(chainR(emptyLines, content(indent)));
+const contents: Parser<Content[]> = repeat(chainR(emptyLines, content));
 export default contents;

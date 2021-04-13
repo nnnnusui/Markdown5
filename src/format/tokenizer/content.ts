@@ -22,7 +22,9 @@ const indentBlock = (indent: string): Parser<Char[]> =>
 const indented = <T>(parser: Parser<T>): Parser<T> =>
   use(indent, (it) => (it === "" ? null : higher(indentBlock(it), parser)));
 
-const content = (indent: string): Parser<Content> =>
-  or(indented(section("")), paragraph(""));
+const content: Parser<Content> = or(
+  indented(lazy(() => section)),
+  paragraph("")
+);
 
 export default content;
