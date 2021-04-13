@@ -3,10 +3,10 @@ import { Combinator } from "../Types";
 const lazy = <T, Src>(
   getCombinator: () => Combinator<T, Src>
 ): Combinator<T, Src> => {
-  let mayBecombinator: Combinator<T, Src> | null;
+  let mayBeCombinator: Combinator<T, Src> | null;
   return (src) => {
-    if (!mayBecombinator) mayBecombinator = getCombinator();
-    return mayBecombinator(src);
+    if (!mayBeCombinator) mayBeCombinator = getCombinator();
+    return mayBeCombinator(src);
   };
 };
 export default lazy;
