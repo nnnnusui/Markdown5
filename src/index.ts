@@ -91,7 +91,7 @@ cli
           );
         });
 
-        const list = parseResults.map(({ src, parsed }) => {
+        const list = parseResults.reverse().map(({ src, parsed }) => {
           const title = parsed.value.title.value;
           return `<li><a href="${src}.html">${title}</a></li>`;
         });
