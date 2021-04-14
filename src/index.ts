@@ -29,12 +29,21 @@ const Template = {
       generateHtmlFromM5Token: (m5: Token<"markdown5">) => {
         const title = m5.value.title.value;
         const firstContent = m5.value.contents[0];
-        const description =
-          firstContent.kind === "paragraph" ? firstContent.value[0] : null;
-        const head =
-          description?.kind === "text"
-            ? Template.getHead(title, description.value)
-            : "";
+        const description = (() => {
+          if (firstContent.kind !== "paragraph") return "";
+          return firstContent.value.reduce(
+            ({ end, result }, it) => {
+              if (end) return { end, result };
+              if (it.kind !== "text") return { end: true, result };
+              return { end: false, result: result + it.value };
+            },
+            { end: false, result: "" }
+          ).result;
+        })();
+        const head = Template.getHead(
+          title,
+          description.replaceAll('"', "&quot;")
+        );
         const body = Template.getBody(m5);
         return template.replace("{head}", head).replace("{body}", body);
       },
