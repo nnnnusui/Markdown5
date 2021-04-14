@@ -24,6 +24,13 @@ const convert = (token: TokenValue): string => {
         ? ul
         : `<section class="list"><h1>${title}</h1>${ul}</section>`;
     }
+    case "code": {
+      const { title, content } = token.value;
+      const code = `<pre><code>${content}</code></pre>`;
+      return title === ""
+        ? code
+        : `<section class="code"><h1>${title}</h1>${code}</section>`;
+    }
     case "paragraph":
       return `<p>${converts(token.value)}</p>`;
     case "text":

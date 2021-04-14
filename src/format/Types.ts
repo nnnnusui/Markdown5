@@ -11,6 +11,7 @@ const TokenKind = [
   "section",
   "sectionHeader",
   "list",
+  "code",
   "paragraph",
   "text",
   "link",
@@ -25,6 +26,10 @@ export type List = {
   kind: "list";
   value: { title: string; contents: Content[][] };
 };
+export type Code = {
+  kind: "code";
+  value: { title: string; content: string };
+};
 export type SectionHeader = { kind: "sectionHeader"; value: string };
 export type Section = {
   kind: "section";
@@ -35,13 +40,14 @@ export type Markdown5 = {
   kind: "markdown5";
   value: { title: Token<"title">; contents: Content[] };
 };
-export type Content = Token<"section" | "paragraph" | "list">;
+export type Content = Token<"section" | "paragraph" | "list" | "code">;
 
 export type TokenValue =
   | Link
   | Text
   | Paragraph
   | List
+  | Code
   | SectionHeader
   | Section
   | Title
