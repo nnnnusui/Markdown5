@@ -42,7 +42,7 @@ const Template = {
         })();
         const head = Template.getHead(
           title,
-          description.replaceAll('"', "&quot;")
+          description.replace(/"/g, "&quot;")
         );
         const body = Template.getBody(m5);
         return template.replace("{head}", head).replace("{body}", body);
