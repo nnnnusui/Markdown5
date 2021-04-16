@@ -26,7 +26,8 @@ const convert = (token: TokenValue): string => {
     }
     case "code": {
       const { title, content } = token.value;
-      const code = `<pre><code>${content}</code></pre>`;
+      const encoded = content.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const code = `<pre><code>${encoded}</code></pre>`;
       return title === ""
         ? code
         : `<section class="code"><h1>${title}</h1>${code}</section>`;
