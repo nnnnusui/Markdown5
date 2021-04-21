@@ -9,7 +9,6 @@ import sames from "../combinator/sames";
 import tokenize from "../combinator/tokenize";
 import {
   indentChar,
-  indent,
   sectionHeaderPrefix,
   emptyLine,
   line,
@@ -17,11 +16,11 @@ import {
 } from "../combinator/util";
 import Parser from "../Parser";
 import { Token } from "../Types";
+import block from "./block";
 import link from "./link";
 
 const paragraphIndent = chainR(or(indentChar, sames("　")), not(indentChar));
-const startOtherBlock = chain(indent, sectionHeaderPrefix);
-const nots = not(or(paragraphIndent, startOtherBlock, emptyLine));
+const nots = not(or(paragraphIndent, block, sectionHeaderPrefix, emptyLine));
 
 const text = tokenize(line, (it) => ({
   kind: "text",
