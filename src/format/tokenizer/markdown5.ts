@@ -8,7 +8,11 @@ const syntax = repeat(chainR(emptyLines, section));
 
 const markdown5 = tokenize(syntax, ([head, ...tails]) => {
   const { header, contents } = head.value;
-  const title = { ...header, kind: "title" as const };
+  const title = {
+    ...header,
+    kind: "title" as const,
+    value: `${header.value.value}`,
+  };
   return {
     kind: "markdown5",
     value: { title, contents: [...contents, ...tails] },

@@ -7,8 +7,9 @@ import tokenize from "../combinator/tokenize";
 import { sectionHeaderPrefix, line } from "../combinator/util";
 import repeat from "../../parser/combinator/repeat";
 import content from "./content";
+import span from "./span";
 
-const header = tokenize(chainR(sectionHeaderPrefix, line), (line) => ({
+const header = tokenize(chainR(sectionHeaderPrefix, span), (line) => ({
   kind: "sectionHeader",
   value: line,
 }));

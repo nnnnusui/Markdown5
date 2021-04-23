@@ -14,8 +14,9 @@ const convert = (token: TokenValue): string => {
         ...token.value.contents,
       ])}</section>`;
     case "title":
-    case "sectionHeader":
       return `<h1>${token.value}</h1>`;
+    case "sectionHeader":
+      return `<h1>${convert(token.value)}</h1>`;
     case "list": {
       const { title, contents } = token.value;
       const lis = contents.map((it) => `<li>${converts(it)}</li>`).join("");

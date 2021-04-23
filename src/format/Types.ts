@@ -30,7 +30,7 @@ export type Code = {
   kind: "code";
   value: { title: string; content: string };
 };
-export type SectionHeader = { kind: "sectionHeader"; value: string };
+export type SectionHeader = { kind: "sectionHeader"; value: Span };
 export type Section = {
   kind: "section";
   value: { header: Token<"sectionHeader">; contents: Content[] };
