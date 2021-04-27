@@ -1,4 +1,5 @@
 import chain from "../../parser/combinator/chain";
+import chainL from "../../parser/combinator/chainL";
 import chainR from "../../parser/combinator/chainR";
 import convert from "../../parser/combinator/convert";
 import lazy from "../../parser/combinator/lazy";
@@ -7,16 +8,20 @@ import or from "../../parser/combinator/or";
 import repeat from "../../parser/combinator/repeat";
 import sames from "../combinator/sames";
 import tokenize from "../combinator/tokenize";
-import { indented, line, macroPrefix } from "../combinator/util";
+import { eol, indented, line, macroPrefix } from "../combinator/util";
 import Parser from "../Parser";
 import { Token } from "../Types";
 import content from "./content";
+import link from "./link";
 import section from "./section";
 
 const childContents = indented(lazy(() => repeat(content)));
 const simpleText = convert(
   tokenize(
-    tokenize(line, (it) => ({ kind: "text", value: it })),
+    or(
+      chainL(link, eol),
+      tokenize(line, (it) => ({ kind: "text", value: it }))
+    ),
     (it) => ({ kind: "paragraph", value: [it] })
   ),
   (it) => [it]
